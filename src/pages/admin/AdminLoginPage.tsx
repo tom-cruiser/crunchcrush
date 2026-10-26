@@ -5,24 +5,16 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { authApi, resetDemoData } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
+import { DEMO_PASSWORD, DEMO_STAFF_ACCOUNTS } from '@/features/auth/demoAccounts'
 import { can, homeForRole, ROLE_LABELS } from '@/features/auth/permissions'
 import { useAuth } from '@/store/auth'
 import { toast } from '@/store/toast'
-import type { StaffRole } from '@/types'
 
 const schema = z.object({
   email: z.email('Enter a valid email'),
   password: z.string().min(1, 'Enter your password'),
 })
 type FormValues = z.infer<typeof schema>
-
-const DEMO_ACCOUNTS: { role: StaffRole; email: string }[] = [
-  { role: 'owner', email: 'owner@crunchcrust.rw' },
-  { role: 'manager', email: 'manager@crunchcrust.rw' },
-  { role: 'cashier', email: 'cashier@crunchcrust.rw' },
-  { role: 'kitchen', email: 'kitchen@crunchcrust.rw' },
-  { role: 'rider', email: 'rider1@crunchcrust.rw' },
-]
 
 export default function AdminLoginPage() {
   const { t } = useTranslation()
@@ -69,14 +61,14 @@ export default function AdminLoginPage() {
           <div className="rounded-xl bg-muted p-3 text-xs text-ink-soft">
             <p className="mb-2 font-semibold text-ink">Demo accounts (password demo1234)</p>
             <div className="flex flex-wrap gap-1.5">
-              {DEMO_ACCOUNTS.map((a) => (
+              {DEMO_STAFF_ACCOUNTS.map((a) => (
                 <button
                   key={a.role}
                   type="button"
                   className="rounded-full bg-surface px-2.5 py-1 font-semibold text-ink ring-1 ring-line hover:ring-ink"
                   onClick={() => {
                     setValue('email', a.email)
-                    setValue('password', 'demo1234')
+                    setValue('password', DEMO_PASSWORD)
                   }}
                 >
                   {ROLE_LABELS[a.role]}

@@ -367,7 +367,7 @@ The UI either branches on these codes or shows their `message`. Keep the codes e
 | `promo_min_order` | Subtotal below the code's minimum | Shown under the promo field. |
 | `otp_invalid` | Wrong or expired code | Shown on the code field. |
 | `invalid_credentials` | Wrong email or password | Shown on the form. |
-| `staff_account` | A staff email used on the customer email sign-in | Shows a link to the staff login page. |
+| `staff_account` | A staff email used on the customer email sign-in | The app retries with `POST /api/staff/auth` and opens the staff screens. |
 | `duplicate` | Promo code already exists | **Shown on the code field.** |
 | `duplicate_email` | Staff email already used | **Shown on the email field.** |
 | `last_owner` | Demoting or deleting the only owner | **Shown on the role field.** |

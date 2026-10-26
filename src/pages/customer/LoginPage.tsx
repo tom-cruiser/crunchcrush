@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, authApi } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
 import { isRwMobile, normalizeRwPhone } from '@/features/checkout/schema'
+import { DEMO_CUSTOMER_EMAIL, DEMO_PASSWORD, DEMO_STAFF_ACCOUNTS } from '@/features/auth/demoAccounts'
+import { homeForRole, ROLE_LABELS } from '@/features/auth/permissions'
 import { cn } from '@/lib/cn'
 import { formatPhone } from '@/lib/format'
 import { useAuth } from '@/store/auth'
@@ -109,17 +111,32 @@ function PhoneLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
 
 function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) => void }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const setStaff = useAuth((s) => s.setStaff)
   const form = useForm<z.infer<typeof emailSchema>>({ resolver: zodResolver(emailSchema), defaultValues: { email: '', password: '' } })
-  const [staffAccount, setStaffAccount] = useState(false)
+  const fill = (email: string) => {
+    form.setValue('email', email)
+    form.setValue('password', DEMO_PASSWORD)
+    form.clearErrors()
+  }
   const submit = async ({ email, password }: z.infer<typeof emailSchema>) => {
-    setStaffAccount(false)
     try {
       const session = await authApi.loginWithEmail(email, password)
       onSignedIn(session.user, session.token)
     } catch (e) {
-      // Staff typed their work email here: point them at the staff sign-in instead.
-      if (e instanceof ApiError && e.code === 'staff_account') setStaffAccount(true)
-      form.setError('password', { message: (e as Error).message })
+      if (!(e instanceof ApiError && e.code === 'staff_account')) {
+        form.setError('password', { message: (e as Error).message })
+        return
+      }
+      // A staff email: sign in to the staff side from the same form.
+      try {
+        const session = await authApi.staffLogin(email, password)
+        setStaff(session.user, session.token)
+        toast.success(t('auth.welcome', { name: session.user.name.split(' ')[0] }))
+        navigate(homeForRole(session.user.role), { replace: true })
+      } catch (staffError) {
+        form.setError('password', { message: (staffError as Error).message })
+      }
     }
   }
   return (
@@ -129,11 +146,16 @@ function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
       <Button type="submit" fullWidth size="lg" loading={form.formState.isSubmitting}>
         {t('auth.signIn')}
       </Button>
-      {staffAccount && (
-        <Link to="/admin/login" className="text-center text-sm font-semibold underline underline-offset-2">
-          {t('auth.goToStaffLogin')}
-        </Link>
-      )}
+      <div className="rounded-xl bg-muted p-3 text-xs text-ink-soft">
+        <p className="mb-2 font-semibold text-ink">{t('auth.demoAccounts', { password: DEMO_PASSWORD })}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {[{ label: t('auth.demoCustomer'), email: DEMO_CUSTOMER_EMAIL }, ...DEMO_STAFF_ACCOUNTS.map((a) => ({ label: ROLE_LABELS[a.role], email: a.email }))].map((a) => (
+            <button key={a.email} type="button" onClick={() => fill(a.email)} className="rounded-full bg-surface px-2.5 py-1 font-semibold text-ink ring-1 ring-line hover:ring-ink">
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </div>
     </form>
   )
 }
