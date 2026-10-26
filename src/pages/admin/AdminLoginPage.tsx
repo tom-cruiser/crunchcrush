@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { authApi } from '@/api'
+import { authApi, resetDemoData } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
 import { can, homeForRole, ROLE_LABELS } from '@/features/auth/permissions'
 import { useAuth } from '@/store/auth'
@@ -33,6 +33,7 @@ export default function AdminLoginPage() {
     register,
     handleSubmit,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
@@ -46,7 +47,7 @@ export default function AdminLoginPage() {
       const target = from && (from.startsWith('/rider') ? can(session.user.role, 'rider.app') : session.user.role !== 'rider') ? from : homeForRole(session.user.role)
       navigate(target, { replace: true })
     } catch (e) {
-      toast.error((e as Error).message)
+      setError('password', { message: (e as Error).message })
     }
   }
 
@@ -82,6 +83,18 @@ export default function AdminLoginPage() {
                 </button>
               ))}
             </div>
+            <button
+              type="button"
+              className="mt-3 underline underline-offset-2 hover:text-ink"
+              onClick={() => {
+                // The demo database lives in this browser; edits on the Staff page can lock the demo accounts out.
+                if (!window.confirm('Reset all demo data in this browser? Orders and changes you made will be lost.')) return
+                resetDemoData()
+                window.location.reload()
+              }}
+            >
+              Demo accounts not working? Reset demo data
+            </button>
           </div>
         </CardBody>
       </Card>
