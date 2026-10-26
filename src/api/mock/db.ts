@@ -25,7 +25,8 @@ export interface MockDb {
 }
 
 const STORAGE_KEY = 'cc-mockdb'
-const VERSION = 1
+// v2: dine-in removed. Older saved data is replaced with fresh demo data.
+const VERSION = 2
 
 function seed(): MockDb {
   return {

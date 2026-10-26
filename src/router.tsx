@@ -22,10 +22,8 @@ const ProfilePage = lazy(() => import('@/pages/customer/account/ProfilePage'))
 const AddressesPage = lazy(() => import('@/pages/customer/account/AddressesPage'))
 const FavouritesPage = lazy(() => import('@/pages/customer/account/FavouritesPage'))
 const ItemRedirectPage = lazy(() => import('@/pages/customer/ItemRedirectPage'))
-const TableEntryPage = lazy(() => import('@/pages/customer/TableEntryPage'))
 const LiveOrdersPage = lazy(() => import('@/pages/admin/LiveOrdersPage'))
 const PrintPage = lazy(() => import('@/pages/admin/PrintPage'))
-const TableQrPage = lazy(() => import('@/pages/admin/TableQrPage'))
 const PromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'))
 const StaffPage = lazy(() => import('@/pages/admin/StaffPage'))
 const ReportsPage = lazy(() => import('@/pages/admin/ReportsPage'))
@@ -49,7 +47,6 @@ export const router = createBrowserRouter([
         element: <CustomerLayout />,
         children: [
           { index: true, element: <MenuPage /> },
-          { path: 'table/:tableNumber', element: <TableEntryPage /> },
           { path: 'item/:itemId', element: <ItemRedirectPage /> },
           { path: 'cart', element: <CartPage /> },
           { path: 'checkout', element: <CheckoutPage /> },
@@ -67,7 +64,6 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'admin/login', element: <AdminLoginPage /> },
-      { path: 'admin/print/tables', element: <Suspense fallback={null}><RequireStaff permission="settings.manage"><TableQrPage /></RequireStaff></Suspense> },
       { path: 'admin/print/:orderId', element: <Suspense fallback={null}><RequireStaff permission="orders.view"><PrintPage /></RequireStaff></Suspense> },
       {
         path: 'admin',

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bike, Store, UtensilsCrossed, WifiOff } from 'lucide-react'
+import { ArrowLeft, Bike, Store, WifiOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, authApi, ordersApi, paymentsApi } from '@/api'
 import { Button, Card, CardBody, ErrorState, Input, SkeletonList } from '@/components/ui'
@@ -44,7 +44,6 @@ function Section({ step, title, children, id }: { step: number; title: string; c
 const FULFILLMENT_ICONS: Record<FulfillmentType, ReactNode> = {
   delivery: <Bike className="h-4 w-4" />,
   pickup: <Store className="h-4 w-4" />,
-  'dine-in': <UtensilsCrossed className="h-4 w-4" />,
 }
 
 export default function CheckoutPage() {
@@ -64,7 +63,7 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
   const { t } = useTranslation()
   const navigate = useNavigate()
   const online = useOnline()
-  const { items, fulfillment, setFulfillment, tableNumber, setTable, promo, clear } = useCart()
+  const { items, fulfillment, setFulfillment, promo, clear } = useCart()
   const { customer, setCustomer } = useAuth()
   const rememberGuestOrder = usePreferences((s) => s.rememberGuestOrder)
 
@@ -75,13 +74,12 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
   const defaultAddress = customer?.addresses.find((a) => a.isDefault) ?? customer?.addresses[0]
   const [addressDraft, setAddressDraft] = useState<AddressDraft>({ address: defaultAddress, isNew: !defaultAddress, save: true })
   const { zone, loading: zoneLoading } = useZoneCheck(activeFulfillment === 'delivery' ? addressDraft.address : undefined)
-  const [tableInput, setTableInput] = useState(tableNumber ? String(tableNumber) : '')
   const [timing, setTiming] = useState<Timing>(() => {
     if (status.open) return { mode: 'asap' }
     const first = scheduleSlots(settings)[0]
     return { mode: 'scheduled', date: first?.date, time: first?.slots[0] }
   })
-  const [sectionErrors, setSectionErrors] = useState<{ address?: string; table?: string; timing?: string }>({})
+  const [sectionErrors, setSectionErrors] = useState<{ address?: string; timing?: string }>({})
   const [placing, setPlacing] = useState(false)
 
   const form = useForm<CheckoutValues>({
@@ -121,14 +119,10 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
       else if (!zone?.deliverable) next.address = t('checkout.notDeliverable', { area: a.area, km: zone?.distanceKm ?? '?' })
       else if (zoneMinShort > 0) next.address = t('checkout.zoneMin', { amount: formatMoney(zone.zone!.minOrder) })
     }
-    if (activeFulfillment === 'dine-in') {
-      const n = Number(tableInput)
-      if (!Number.isInteger(n) || n < 1 || n > settings.tableCount) next.table = `${t('checkout.chooseTable')} (1–${settings.tableCount})`
-    }
     if (timing.mode === 'scheduled' && (!timing.date || !timing.time)) next.timing = t('checkout.chooseTime')
     if (timing.mode === 'asap' && !status.open) next.timing = t('checkout.closedOnlySchedule')
     setSectionErrors(next)
-    const firstKey = (['address', 'table', 'timing'] as const).find((k) => next[k])
+    const firstKey = (['address', 'timing'] as const).find((k) => next[k])
     if (firstKey) document.getElementById(firstKey === 'timing' ? 'section-timing' : 'section-fulfilment')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     return !firstKey
   }
@@ -137,11 +131,9 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
     if (!validateSections()) return
     setPlacing(true)
     try {
-      const table = activeFulfillment === 'dine-in' ? Number(tableInput) : undefined
       const order = await ordersApi.placeOrder({
         items,
         fulfillment: activeFulfillment,
-        tableNumber: table,
         address: activeFulfillment === 'delivery' ? addressDraft.address : undefined,
         scheduledFor: timing.mode === 'scheduled' && timing.date && timing.time ? slotToIso(timing.date, timing.time) : undefined,
         paymentMethod: values.paymentMethod,
@@ -153,7 +145,6 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
         const { id: _id, ...address } = addressDraft.address
         authApi.saveAddress(customer.id, address).then(setCustomer, () => undefined)
       }
-      if (table) setTable(table)
 
       let target = `/order/${order.id}/confirmed`
       if (values.paymentMethod !== 'cash') {
@@ -195,7 +186,7 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
 
       <div className="flex flex-col gap-4">
         <Section step={1} title={t('checkout.howToGet')} id="section-fulfilment">
-          <fieldset className="grid gap-2 sm:grid-cols-3">
+          <fieldset className="grid gap-2 sm:grid-cols-2">
             <legend className="sr-only">{t('checkout.howToGet')}</legend>
             {fulfillmentTypes.map((f) => (
               <ChoiceCard key={f} name="fulfillment" value={f} checked={activeFulfillment === f} onChange={() => setFulfillment(f)} icon={FULFILLMENT_ICONS[f]} title={t(`fulfillment.${f}`)} />
@@ -223,20 +214,6 @@ function CheckoutForm({ settings, placedRef }: { settings: RestaurantSettings; p
             <p className="rounded-xl bg-muted px-3 py-2.5 text-sm">
               <span className="font-semibold">{t('checkout.pickupFrom')}:</span> {settings.address.street}, {settings.address.area}
             </p>
-          )}
-          {activeFulfillment === 'dine-in' && (
-            <Input
-              label={t('checkout.table')}
-              hint={t('checkout.tableHint')}
-              inputMode="numeric"
-              value={tableInput}
-              onChange={(e) => {
-                setTableInput(e.target.value.replace(/\D/g, '').slice(0, 3))
-                setSectionErrors((s) => ({ ...s, table: undefined }))
-              }}
-              error={sectionErrors.table}
-              className="max-w-40"
-            />
           )}
         </Section>
 

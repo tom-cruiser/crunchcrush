@@ -40,11 +40,9 @@ export const mockSettings: RestaurantSettings = {
   minimumOrder: 3000,
   taxRatePercent: 18,
   taxInclusive: true,
-  serviceChargePercent: 5,
   defaultPrepTimeMinutes: 20,
   enabledPaymentMethods: ['mtn_momo', 'airtel_money', 'card', 'cash'],
-  fulfillmentTypes: ['delivery', 'pickup', 'dine-in'],
-  tableCount: 14,
+  fulfillmentTypes: ['delivery', 'pickup'],
 }
 
 export const mockZones: DeliveryZone[] = [

@@ -107,7 +107,6 @@ export default function LiveOrdersPage() {
           <option value="">All types</option>
           <option value="delivery">Delivery</option>
           <option value="pickup">Pickup</option>
-          <option value="dine-in">Dine-in</option>
         </Select>
         <Can permission="settings.manage">
           <Switch

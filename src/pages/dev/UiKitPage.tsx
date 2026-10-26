@@ -96,7 +96,6 @@ export default function UiKitPage() {
           <Select label="Fulfilment" defaultValue="delivery">
             <option value="delivery">Delivery</option>
             <option value="pickup">Pickup</option>
-            <option value="dine-in">Dine-in</option>
           </Select>
           <Textarea label="Note for the kitchen" placeholder="No onions please" className="sm:col-span-2" />
         </div>

@@ -97,7 +97,7 @@ export interface CartItem {
   unitPrice: Money
 }
 
-export type FulfillmentType = 'delivery' | 'pickup' | 'dine-in'
+export type FulfillmentType = 'delivery' | 'pickup'
 
 export type OrderStatus =
   | 'received'
@@ -137,7 +137,6 @@ export interface OrderStatusEvent {
 export interface PriceBreakdown {
   subtotal: Money
   deliveryFee: Money
-  serviceCharge: Money
   tax: Money
   discount: Money
   total: Money
@@ -166,7 +165,6 @@ export interface Order {
   customerPhone: string
   items: CartItem[]
   fulfillment: FulfillmentType
-  tableNumber?: number
   address?: Address
   scheduledFor?: ISODate
   status: OrderStatus
@@ -299,11 +297,9 @@ export interface RestaurantSettings {
   taxRatePercent: number
   /** Whether menu prices already include tax (Rwanda VAT is typically inclusive). */
   taxInclusive: boolean
-  serviceChargePercent: number
   defaultPrepTimeMinutes: number
   enabledPaymentMethods: PaymentMethod[]
   fulfillmentTypes: FulfillmentType[]
-  tableCount: number
 }
 
 /** Standard envelope for list endpoints so pagination can be added without changing callers. */

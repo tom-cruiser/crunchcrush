@@ -81,7 +81,6 @@ function simulatedLocation(order: Order): Coordinates | undefined {
 export interface PlaceOrderInput {
   items: CartItem[]
   fulfillment: FulfillmentType
-  tableNumber?: number
   address?: Address
   scheduledFor?: string
   paymentMethod: PaymentMethod
@@ -123,7 +122,6 @@ export function placeOrder(input: PlaceOrderInput): Promise<Order> {
         customerPhone: input.customer.phone,
         items: input.items,
         fulfillment: input.fulfillment,
-        tableNumber: input.tableNumber,
         address: input.address,
         scheduledFor: input.scheduledFor,
         status: 'received',

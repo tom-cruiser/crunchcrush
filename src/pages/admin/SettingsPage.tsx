@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { Plus, QrCode, RotateCcw, Trash2 } from 'lucide-react'
+import { Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { resetDemoData, settingsApi } from '@/api'
 import { Button, Card, ErrorState, Input, Modal, SkeletonList, Switch } from '@/components/ui'
 import { FULFILLMENT_TYPES, PAYMENT_METHODS, settingsSchema, toPatch, toValues, type SettingsValues } from '@/features/admin/settings/settingsSchema'
@@ -143,17 +143,12 @@ function SettingsForm({ settings, onSaved }: { settings: RestaurantSettings; onS
           <Input label="Minimum order (RWF)" type="number" inputMode="numeric" {...register('minimumOrder', { valueAsNumber: true })} error={errors.minimumOrder?.message} />
           <Input label="Default prep time (min)" type="number" inputMode="numeric" {...register('defaultPrepTimeMinutes', { valueAsNumber: true })} error={errors.defaultPrepTimeMinutes?.message} />
           <Input label="Busy mode adds (min)" type="number" inputMode="numeric" {...register('busyExtraMinutes', { valueAsNumber: true })} error={errors.busyExtraMinutes?.message} />
-          <Input label="Dine-in tables" type="number" inputMode="numeric" {...register('tableCount', { valueAsNumber: true })} error={errors.tableCount?.message} />
         </div>
-        <a href="/admin/print/tables" target="_blank" rel="noreferrer" className="flex items-center gap-2 self-start text-sm font-semibold underline underline-offset-4">
-          <QrCode className="h-4 w-4" /> Print table QR codes
-        </a>
       </Section>
 
-      <Section title="Tax and charges">
+      <Section title="Tax">
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="VAT rate (%)" type="number" step="0.5" inputMode="decimal" {...register('taxRatePercent', { valueAsNumber: true })} error={errors.taxRatePercent?.message} />
-          <Input label="Dine-in service charge (%)" type="number" step="0.5" inputMode="decimal" {...register('serviceChargePercent', { valueAsNumber: true })} error={errors.serviceChargePercent?.message} />
         </div>
         <Controller
           control={control}

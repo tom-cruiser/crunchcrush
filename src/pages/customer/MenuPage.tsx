@@ -15,7 +15,6 @@ import { activeFilterCount, EMPTY_FILTERS, matchesFilters, type MenuFilters } fr
 import { orderability, useMenu } from '@/features/menu/useMenu'
 import { getOpenStatus, isWithinWindow } from '@/features/store/hours'
 import { useSettings } from '@/features/store/useSettings'
-import { useCart } from '@/store/cart'
 import { toast } from '@/store/toast'
 import type { MenuItem } from '@/types'
 
@@ -39,7 +38,6 @@ export default function MenuPage() {
   const { t } = useTranslation()
   const menu = useMenu()
   const { data: settings } = useSettings()
-  const tableNumber = useCart((s) => s.tableNumber)
   const [params, setParams] = useSearchParams()
   const [filters, setFilters] = useState<MenuFilters>(EMPTY_FILTERS)
   const deferredFilters = useDeferredValue(filters)
@@ -112,12 +110,6 @@ export default function MenuPage() {
             {t('menu.info')}
           </Button>
         </div>
-        {tableNumber && (
-          <p className="flex items-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-brand-fg">
-            <UtensilsCrossed className="h-4 w-4" aria-hidden="true" />
-            {t('fulfillment.dine-in')} · Table {tableNumber}
-          </p>
-        )}
         {!status.open && (
           <p role="status" className="flex items-start gap-2 rounded-xl bg-muted px-4 py-3 text-sm font-medium">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />

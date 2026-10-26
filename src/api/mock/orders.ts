@@ -66,7 +66,6 @@ interface OrderSeed {
   guest?: { name: string; phone: string }
   paymentMethod: PaymentMethod
   paymentStatus?: PaymentStatus
-  tableNumber?: number
   address?: Address
   riderId?: string
   promoCode?: string
@@ -97,7 +96,6 @@ function makeOrder(seed: OrderSeed, now: Date): Order {
     customerPhone: customer?.phone ?? seed.guest?.phone ?? '+250788000000',
     items: seed.lines,
     fulfillment: seed.fulfillment,
-    tableNumber: seed.tableNumber,
     address,
     scheduledFor: seed.scheduledInMinutes ? new Date(now.getTime() + seed.scheduledInMinutes * 60_000).toISOString() : undefined,
     status: seed.status,
@@ -122,7 +120,7 @@ function makeOrder(seed: OrderSeed, now: Date): Order {
 function liveSeeds(): OrderSeed[] {
   return [
     { id: 'ord-1001', number: 1001, minutesAgo: 1, status: 'received', fulfillment: 'delivery', customerIndex: 1, paymentMethod: 'mtn_momo', lines: [buildLine('taco-beef', 1, ['ao-cheese'], 'Extra consommé please'), buildLine('drink-passion', 2)] },
-    { id: 'ord-1002', number: 1002, minutesAgo: 3, status: 'received', fulfillment: 'dine-in', tableNumber: 4, guest: { name: 'Table 4', phone: '+250788000004' }, paymentMethod: 'cash', lines: [buildLine('rolex-classic', 2), buildLine('drink-coffee', 2)] },
+    { id: 'ord-1002', number: 1002, minutesAgo: 3, status: 'received', fulfillment: 'pickup', guest: { name: 'Alice M.', phone: '+250788000004' }, paymentMethod: 'cash', lines: [buildLine('rolex-classic', 2), buildLine('drink-coffee', 2)] },
     { id: 'ord-1003', number: 1003, minutesAgo: 6, status: 'accepted', fulfillment: 'pickup', customerIndex: 2, paymentMethod: 'airtel_money', lines: [buildLine('combo-taco', 1), buildLine('dessert-churros', 1)] },
     { id: 'ord-1004', number: 1004, minutesAgo: 12, status: 'preparing', fulfillment: 'delivery', customerIndex: 0, paymentMethod: 'mtn_momo', promoCode: 'KARIBU10', lines: [buildLine('taco-chicken', 2, ['ao-guac']), buildLine('side-fries', 1), buildLine('drink-soda', 2)] },
     { id: 'ord-1005', number: 1005, minutesAgo: 20, status: 'ready', fulfillment: 'pickup', guest: { name: 'Yves K.', phone: '+250788777321' }, paymentMethod: 'card', lines: [buildLine('rolex-chicken', 1, ['ao-avocado']), buildLine('drink-water', 1)] },
@@ -139,7 +137,7 @@ function historySeeds(now: Date): OrderSeed[] {
   const rand = seeded(42)
   const available = mockItems.filter((i) => i.isAvailable)
   const methods: PaymentMethod[] = ['mtn_momo', 'mtn_momo', 'mtn_momo', 'airtel_money', 'airtel_money', 'card', 'cash']
-  const fulfillments: FulfillmentType[] = ['delivery', 'delivery', 'pickup', 'dine-in']
+  const fulfillments: FulfillmentType[] = ['delivery', 'delivery', 'pickup']
   // Weighted toward lunch (12-14h) and dinner (18-21h).
   const hours = [7, 8, 11, 12, 12, 13, 13, 14, 17, 18, 19, 19, 20, 20, 21]
   const seeds: OrderSeed[] = []
@@ -165,7 +163,6 @@ function historySeeds(now: Date): OrderSeed[] {
       status,
       fulfillment,
       lines,
-      tableNumber: fulfillment === 'dine-in' ? 1 + Math.floor(rand() * 14) : undefined,
       customerIndex,
       guest: customerIndex === undefined ? { name: 'Guest', phone: '+250788000000' } : undefined,
       paymentMethod: methods[Math.floor(rand() * methods.length)],

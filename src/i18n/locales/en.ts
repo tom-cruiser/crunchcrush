@@ -125,7 +125,6 @@ const en = {
     subtotal: 'Subtotal',
     deliveryFee: 'Delivery fee',
     deliveryAtCheckout: 'Calculated at checkout',
-    serviceCharge: 'Service charge ({{percent}}%)',
     taxIncluded: 'Includes VAT ({{percent}}%)',
     tax: 'VAT ({{percent}}%)',
     discount: 'Discount',
@@ -140,8 +139,6 @@ const en = {
     howToGet: 'How would you like your order?',
     deliveryAddress: 'Delivery address',
     pickupFrom: 'Pick up from',
-    table: 'Table number',
-    tableHint: 'Scan the QR code on your table, or enter the number.',
     savedAddresses: 'Saved addresses',
     newAddress: 'New address',
     searchArea: 'Search your area or landmark',
@@ -192,7 +189,6 @@ const en = {
     placing: 'Placing order…',
     fixErrors: 'Please check the highlighted fields.',
     chooseAddress: 'Choose a delivery address.',
-    chooseTable: 'Enter your table number.',
     chooseTime: 'Pick a time for your order.',
   },
   pay: {
@@ -241,7 +237,6 @@ const en = {
     rejected: 'Rejected',
     cancelled: 'Cancelled',
     collected: 'Collected',
-    served: 'Served',
     readyPickup: 'Ready for pickup',
   },
   statusInfo: {
@@ -273,7 +268,6 @@ const en = {
     details: 'Order details',
     deliverTo: 'Deliver to',
     pickupAt: 'Pick up at',
-    table: 'Table {{n}}',
     payment: 'Payment',
     paymentPending: 'Payment pending',
     paymentFailed: 'Payment failed',
@@ -385,7 +379,6 @@ const en = {
   fulfillment: {
     delivery: 'Delivery',
     pickup: 'Pickup',
-    'dine-in': 'Dine-in',
   },
   payment: {
     mtn_momo: 'MTN MoMo',

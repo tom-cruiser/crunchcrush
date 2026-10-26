@@ -152,8 +152,8 @@ The full definitions, with comments, are in `src/types/index.ts`. Summary:
 | `ItemOption` | `name`, `required`, `minSelect`, `maxSelect`, `choices[]` | A choice group, e.g. "Tortilla". Each `OptionChoice` has `priceDelta` and `isAvailable`. |
 | `AddOn` | `name`, `price`, `maxQuantity`, `isAvailable` | Paid extras, each with a quantity. |
 | `CartItem` | `itemId`, `quantity`, `selectedOptions[]`, `selectedAddOns[]`, `removedIngredients[]`, `note?`, `unitPrice` | One order line. Names and prices are copied in so old orders still read correctly after the menu changes. |
-| `Order` | `orderNumber`, `customerId?`, `customerName`, `customerPhone`, `items[]`, `fulfillment`, `tableNumber?`, `address?`, `scheduledFor?`, `status`, `statusHistory[]`, `paymentMethod`, `paymentStatus`, `pricing`, `promoCode?`, `estimatedReadyAt?`, `prepTimeMinutes?`, `riderId?`, `rejectionReason?`, `cancellationReason?`, `rating?`, `problemReports[]` | See [§7.4](#74-order-status-flow). |
-| `PriceBreakdown` | `subtotal`, `deliveryFee`, `serviceCharge`, `tax`, `discount`, `total` | Calculated by the server. |
+| `Order` | `orderNumber`, `customerId?`, `customerName`, `customerPhone`, `items[]`, `fulfillment`, `address?`, `scheduledFor?`, `status`, `statusHistory[]`, `paymentMethod`, `paymentStatus`, `pricing`, `promoCode?`, `estimatedReadyAt?`, `prepTimeMinutes?`, `riderId?`, `rejectionReason?`, `cancellationReason?`, `rating?`, `problemReports[]` | See [§7.4](#74-order-status-flow). |
+| `PriceBreakdown` | `subtotal`, `deliveryFee`, `tax`, `discount`, `total` | Calculated by the server. |
 | `User` (customer) | `name`, `phone`, `email?`, `addresses[]`, `favouriteItemIds[]` | |
 | `Address` | `label`, `street`, `area`, `city`, `instructions?`, `coordinates`, `isDefault?` | Coordinates drive the delivery zone check. |
 | `Staff` | `name`, `phone`, `email`, `role`, `isActive` | |
@@ -161,12 +161,12 @@ The full definitions, with comments, are in `src/types/index.ts`. Summary:
 | `DeliveryZone` | `name`, `radiusKm`, `fee`, `minOrder`, `estimatedMinutes`, `isActive` | Circles around the restaurant. |
 | `PromoCode` | `code`, `type`, `value`, `minOrder`, `maxDiscount?`, `validFrom`, `validTo`, `usageLimit?`, `usedCount`, `isActive` | `type` is `percentage`, `fixed` or `free_delivery`. |
 | `ComboDeal` | `name`, `itemIds[]`, `price`, `isActive` | Managed in admin; not sold to customers yet. |
-| `RestaurantSettings` | contact details, `address`, `isOpen`, `busyMode`, `busyExtraMinutes`, `openingHours[]`, `holidayClosures[]`, `minimumOrder`, `taxRatePercent`, `taxInclusive`, `serviceChargePercent`, `defaultPrepTimeMinutes`, `enabledPaymentMethods[]`, `fulfillmentTypes[]`, `tableCount` | A single record. |
+| `RestaurantSettings` | contact details, `address`, `isOpen`, `busyMode`, `busyExtraMinutes`, `openingHours[]`, `holidayClosures[]`, `minimumOrder`, `taxRatePercent`, `taxInclusive`, `defaultPrepTimeMinutes`, `enabledPaymentMethods[]`, `fulfillmentTypes[]` | A single record. |
 
 **Enumerations:**
 - `OrderStatus`: `received`, `accepted`, `preparing`, `ready`, `out_for_delivery`,
   `delivered`, `rejected`, `cancelled`.
-- `FulfillmentType`: `delivery`, `pickup`, `dine-in`.
+- `FulfillmentType`: `delivery`, `pickup`. The restaurant is online-only: there is no dine-in and no tables.
 - `PaymentMethod`: `mtn_momo`, `airtel_money`, `card`, `cash`.
 - `PaymentStatus`: `pending`, `paid`, `failed`, `refunded`.
 - `StaffRole`: `owner`, `manager`, `cashier`, `kitchen`, `rider`.
@@ -231,8 +231,7 @@ first remaining address the default.
 ```ts
 interface PlaceOrderInput {
   items: CartItem[]            // see §8: recompute prices, don't trust unitPrice
-  fulfillment: 'delivery' | 'pickup' | 'dine-in'
-  tableNumber?: number         // dine-in, 1..tableCount (from a table QR code /table/:n)
+  fulfillment: 'delivery' | 'pickup'
   address?: Address            // delivery only
   scheduledFor?: string        // ISO; absent = as soon as possible
   paymentMethod: PaymentMethod
@@ -399,15 +398,14 @@ In order, refusing with the code shown:
 5. **Delivery:** an address is required (`address_required`). Find the zone
    ([§7.3](#73-delivery-zones)) or return `out_of_zone`. The subtotal must reach the
    zone's `minOrder` (`min_order`).
-6. **Dine-in:** `tableNumber` must be between 1 and `tableCount`.
-7. **Fulfilment and payment allowed:** `fulfillment` must be in `fulfillmentTypes`, and
+6. **Fulfilment and payment allowed:** `fulfillment` must be in `fulfillmentTypes`, and
    `paymentMethod` in `enabledPaymentMethods`. Cash is "pay the rider" for delivery and
-   "pay at the counter" otherwise.
-8. **Promo:** validate fully ([§7.7](#77-promo-codes)) and increase `usedCount` only
+   "pay at the counter" for pickup.
+7. **Promo:** validate fully ([§7.7](#77-promo-codes)) and increase `usedCount` only
    when the order is actually placed.
-9. **Price** with [§7.2](#72-pricing) from the **server's own menu prices**.
-10. **Store minimum:** the subtotal must reach `settings.minimumOrder` (`min_order`).
-11. **Create** the order with `status: 'received'`, `paymentStatus: 'pending'`, a
+8. **Price** with [§7.2](#72-pricing) from the **server's own menu prices**.
+9. **Store minimum:** the subtotal must reach `settings.minimumOrder` (`min_order`).
+10. **Create** the order with `status: 'received'`, `paymentStatus: 'pending'`, a
     `statusHistory` entry, the next order number (`CC-` + an increasing number), and
     `estimatedReadyAt = now + defaultPrepTimeMinutes (+ busyExtraMinutes if busyMode)`.
 
@@ -423,12 +421,11 @@ unitPrice     = item.price + Σ chosen option priceDelta + Σ (addOn.price × ad
 line total    = unitPrice × quantity
 subtotal      = Σ line totals
 deliveryFee   = zone.fee for delivery, otherwise 0
-serviceCharge = round(subtotal × serviceChargePercent / 100) for dine-in only, otherwise 0
 discount      = promo discount (§7.7)
-taxable       = subtotal + serviceCharge − min(discount, subtotal)
+taxable       = subtotal − min(discount, subtotal)
 tax           = taxInclusive ? round(taxable − taxable / (1 + taxRate/100))   // VAT already inside the prices
                              : round(taxable × taxRate / 100)
-total         = max(0, subtotal + deliveryFee + serviceCharge − discount + (taxInclusive ? 0 : tax))
+total         = max(0, subtotal + deliveryFee − discount + (taxInclusive ? 0 : tax))
 ```
 
 With inclusive tax (the default), `tax` only reports the VAT contained in the total for
@@ -447,13 +444,13 @@ rounding.
 
 ```
 delivery:        received → accepted → preparing → ready → out_for_delivery → delivered
-pickup, dine-in: received → accepted → preparing → ready → delivered
+pickup:          received → accepted → preparing → ready → delivered
 any active  → cancelled   (staff, with a reason)
 received    → rejected    (staff, with a reason)
 received    → cancelled   (customer, only before acceptance)
 ```
 
-For pickup and dine-in, `delivered` is shown as "Collected" or "Served".
+For pickup, `delivered` is shown as "Collected".
 
 | Transition | Who | Side effects |
 |---|---|---|
@@ -533,8 +530,8 @@ Codes must be unique (`duplicate`).
 Reference implementation: `src/api/reports.ts`.
 
 - **In range:** orders whose `createdAt` falls on those Kigali dates.
-- **Completed:** in-range orders with status `delivered` (this includes collected and
-  served). Revenue = Σ `pricing.total` of completed orders.
+- **Completed:** in-range orders with status `delivered` (this includes collected
+  pickups). Revenue = Σ `pricing.total` of completed orders.
 
 ```ts
 interface SalesReport {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, ClipboardX, Clock, CreditCard, MapPin, MessageSquareWarning, Phone, RotateCcw, Store, UtensilsCrossed } from 'lucide-react'
+import { ArrowLeft, ClipboardX, Clock, CreditCard, MapPin, MessageSquareWarning, Phone, RotateCcw, Store } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, ordersApi } from '@/api'
 import { Badge, Button, ButtonAnchor, ButtonLink, Card, CardBody, EmptyState, ErrorState, Modal, Skeleton, Textarea } from '@/components/ui'
@@ -180,7 +180,7 @@ export default function OrderTrackingPage() {
         <CardBody className="flex flex-col gap-4 text-sm">
           <h2 className="text-base font-bold">{t('tracking.details')}</h2>
           <p className="flex items-start gap-2">
-            {o.fulfillment === 'delivery' ? <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> : o.fulfillment === 'pickup' ? <Store className="mt-0.5 h-4 w-4 shrink-0" /> : <UtensilsCrossed className="mt-0.5 h-4 w-4 shrink-0" />}
+            {o.fulfillment === 'delivery' ? <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> : <Store className="mt-0.5 h-4 w-4 shrink-0" />}
             <span>
               {o.fulfillment === 'delivery' && o.address && (
                 <>
@@ -199,7 +199,6 @@ export default function OrderTrackingPage() {
                   </span>
                 </>
               )}
-              {o.fulfillment === 'dine-in' && <span className="font-semibold">{t('tracking.table', { n: o.tableNumber })}</span>}
             </span>
           </p>
           <ul className="flex flex-col gap-2 border-t border-line pt-3">

@@ -6,10 +6,9 @@ export { ACTIVE_STATUSES, flowFor }
 
 export const isActive = (status: OrderStatus) => ACTIVE_STATUSES.includes(status)
 
-/** "Delivered" reads oddly for pickup and dine-in, so the final step is named per fulfilment. */
+/** "Delivered" reads oddly for pickup, so the final step is named per fulfilment. */
 export function statusLabel(t: TFunction, status: OrderStatus, fulfillment: FulfillmentType): string {
   if (status === 'delivered' && fulfillment === 'pickup') return t('status.collected')
-  if (status === 'delivered' && fulfillment === 'dine-in') return t('status.served')
   if (status === 'ready' && fulfillment === 'pickup') return t('status.readyPickup')
   return t(`status.${status}`)
 }

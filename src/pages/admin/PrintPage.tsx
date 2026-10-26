@@ -18,7 +18,6 @@ function KitchenTicket({ order }: { order: Order }) {
         <p className="text-3xl font-black">{order.orderNumber}</p>
         <p className="text-lg font-bold uppercase">
           {t(`fulfillment.${order.fulfillment}`)}
-          {order.tableNumber ? ` · TABLE ${order.tableNumber}` : ''}
         </p>
         <p>{formatDateTime(order.createdAt)}</p>
         {order.scheduledFor && <p className="mt-1 bg-black px-1 font-bold text-white">SCHEDULED {formatDateTime(order.scheduledFor)}</p>}
@@ -76,7 +75,7 @@ function Receipt({ order, settings }: { order: Order; settings: RestaurantSettin
       <div className="border-y border-dashed border-black py-1">
         {row('Order', order.orderNumber)}
         {row('Date', formatDateTime(order.createdAt))}
-        {row('Type', `${t(`fulfillment.${order.fulfillment}`)}${order.tableNumber ? ` · Table ${order.tableNumber}` : ''}`)}
+        {row('Type', t(`fulfillment.${order.fulfillment}`))}
         {row('Customer', order.customerName)}
       </div>
       <ul>
@@ -90,7 +89,6 @@ function Receipt({ order, settings }: { order: Order; settings: RestaurantSettin
       <div className="border-t border-dashed border-black pt-1">
         {row('Subtotal', formatMoney(p.subtotal))}
         {p.deliveryFee > 0 && row('Delivery', formatMoney(p.deliveryFee))}
-        {p.serviceCharge > 0 && row(`Service (${settings.serviceChargePercent}%)`, formatMoney(p.serviceCharge))}
         {p.discount > 0 && row(`Discount${order.promoCode ? ` (${order.promoCode})` : ''}`, `-${formatMoney(p.discount)}`)}
         {row('TOTAL', formatMoney(p.total), true)}
         {row(settings.taxInclusive ? `incl. VAT ${settings.taxRatePercent}%` : `VAT ${settings.taxRatePercent}%`, formatMoney(p.tax))}

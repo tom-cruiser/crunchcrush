@@ -81,7 +81,6 @@ function OrderDetail({ order, settings, onClose, onUpdated }: Required<Props>) {
       <div className="flex flex-wrap items-center gap-2">
         <OrderStatusBadge status={order.status} fulfillment={order.fulfillment} />
         <Badge tone="outline">{t(`fulfillment.${order.fulfillment}`)}</Badge>
-        {order.tableNumber && <Badge tone="dark">Table {order.tableNumber}</Badge>}
         {order.scheduledFor && <Badge tone="info">Scheduled {formatDateTime(order.scheduledFor)}</Badge>}
         <span className="text-sm text-ink-soft">
           {formatDateTime(order.createdAt)} · {formatRelative(order.createdAt)}
@@ -260,9 +259,9 @@ function OrderDetail({ order, settings, onClose, onUpdated }: Required<Props>) {
                       Send out with rider
                     </Button>
                   )}
-                  {order.status === 'ready' && order.fulfillment !== 'delivery' && (
-                    <Button size="lg" className="flex-1" loading={busy} onClick={() => advance('delivered', order.fulfillment === 'pickup' ? 'collected' : 'served')}>
-                      {order.fulfillment === 'pickup' ? 'Mark collected' : 'Mark served'}
+                  {order.status === 'ready' && order.fulfillment === 'pickup' && (
+                    <Button size="lg" className="flex-1" loading={busy} onClick={() => advance('delivered', 'collected')}>
+                      Mark collected
                     </Button>
                   )}
                   {order.status === 'out_for_delivery' && (

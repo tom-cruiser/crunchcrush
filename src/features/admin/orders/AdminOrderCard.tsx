@@ -1,4 +1,4 @@
-import { CalendarClock, CreditCard, MessageSquare, Bike, Store, UtensilsCrossed } from 'lucide-react'
+import { CalendarClock, CreditCard, MessageSquare, Bike, Store } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui'
 import { OrderStatusBadge } from '@/features/orders/components/OrderStatusBadge'
@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
 import { formatMoney, formatRelative, formatTime } from '@/lib/format'
 import type { Order } from '@/types'
 
-const ICON = { delivery: Bike, pickup: Store, 'dine-in': UtensilsCrossed }
+const ICON = { delivery: Bike, pickup: Store }
 
 export const awaitingPayment = (o: Order) => o.paymentMethod !== 'cash' && o.paymentStatus !== 'paid' && o.paymentStatus !== 'refunded'
 
@@ -31,7 +31,6 @@ export function AdminOrderCard({ order, onOpen, showPrices }: { order: Order; on
         <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="font-semibold">
           {t(`fulfillment.${order.fulfillment}`)}
-          {order.tableNumber ? ` · T${order.tableNumber}` : ''}
         </span>
         <span className="truncate text-ink-soft">· {order.customerName}</span>
       </div>

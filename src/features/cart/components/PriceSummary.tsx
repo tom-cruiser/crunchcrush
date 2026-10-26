@@ -5,7 +5,7 @@ import type { PriceBreakdown, PromoCode, RestaurantSettings } from '@/types'
 
 interface PriceSummaryProps {
   pricing: PriceBreakdown
-  settings: Pick<RestaurantSettings, 'taxRatePercent' | 'taxInclusive' | 'serviceChargePercent'>
+  settings: Pick<RestaurantSettings, 'taxRatePercent' | 'taxInclusive'>
   promo?: Pick<PromoCode, 'code' | 'type'>
   /** Delivery fee not known yet (no address): show "calculated at checkout". */
   deliveryPending?: boolean
@@ -35,7 +35,6 @@ export function PriceSummary({ pricing, settings, promo, deliveryPending, showDe
             muted={deliveryPending}
           />
         )}
-        {pricing.serviceCharge > 0 && <Row label={t('cart.serviceCharge', { percent: settings.serviceChargePercent })} value={formatMoney(pricing.serviceCharge)} />}
         {pricing.discount > 0 && promo?.type !== 'free_delivery' && <Row label={`${t('cart.discount')}${promo ? ` (${promo.code})` : ''}`} value={`−${formatMoney(pricing.discount)}`} />}
         {!settings.taxInclusive && pricing.tax > 0 && <Row label={t('cart.tax', { percent: settings.taxRatePercent })} value={formatMoney(pricing.tax)} />}
         <Row label={t('cart.total')} value={formatMoney(pricing.total)} strong />

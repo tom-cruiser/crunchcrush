@@ -27,23 +27,22 @@ interface PricingInput {
   items: CartItem[]
   fulfillment: FulfillmentType
   deliveryFee: Money
-  settings: Pick<RestaurantSettings, 'taxRatePercent' | 'taxInclusive' | 'serviceChargePercent'>
+  settings: Pick<RestaurantSettings, 'taxRatePercent' | 'taxInclusive'>
   promo?: PromoCode
 }
 
 /**
- * Service charge applies to dine-in only. When tax is inclusive the `tax` line
+ * The delivery fee applies to delivery only. When tax is inclusive the `tax` line
  * shows the VAT already contained in the total rather than adding to it.
  */
 export function calculatePricing({ items, fulfillment, deliveryFee, settings, promo }: PricingInput): PriceBreakdown {
   const subtotal = cartSubtotal(items)
   const fee = fulfillment === 'delivery' ? deliveryFee : 0
-  const serviceCharge = fulfillment === 'dine-in' ? Math.round((subtotal * settings.serviceChargePercent) / 100) : 0
   const discount = promoDiscount(promo, subtotal, fee)
-  const taxable = subtotal + serviceCharge - Math.min(discount, subtotal)
+  const taxable = subtotal - Math.min(discount, subtotal)
   const tax = settings.taxInclusive
     ? Math.round(taxable - taxable / (1 + settings.taxRatePercent / 100))
     : Math.round((taxable * settings.taxRatePercent) / 100)
-  const total = subtotal + fee + serviceCharge - discount + (settings.taxInclusive ? 0 : tax)
-  return { subtotal, deliveryFee: fee, serviceCharge, tax, discount, total: Math.max(0, total) }
+  const total = subtotal + fee - discount + (settings.taxInclusive ? 0 : tax)
+  return { subtotal, deliveryFee: fee, tax, discount, total: Math.max(0, total) }
 }

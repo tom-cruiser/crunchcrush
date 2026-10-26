@@ -6,8 +6,6 @@ import { uid } from '@/lib/id'
 interface CartState {
   items: CartItem[]
   fulfillment: FulfillmentType
-  /** Set when the customer arrived via /table/:n. */
-  tableNumber?: number
   /** Promo validated by the API; checkout re-validates before placing the order. */
   promo?: PromoCode
   addItem: (item: Omit<CartItem, 'lineId'>) => void
@@ -16,7 +14,6 @@ interface CartState {
   removeItem: (lineId: ID) => void
   clear: () => void
   setFulfillment: (fulfillment: FulfillmentType) => void
-  setTable: (tableNumber?: number) => void
   setPromo: (promo?: PromoCode) => void
 }
 
@@ -47,10 +44,17 @@ export const useCart = create<CartState>()(
       removeItem: (lineId) => set((s) => ({ items: s.items.filter((i) => i.lineId !== lineId) })),
       clear: () => set({ items: [], promo: undefined }),
       setFulfillment: (fulfillment) => set({ fulfillment }),
-      setTable: (tableNumber) => set(tableNumber ? { tableNumber, fulfillment: 'dine-in' } : { tableNumber: undefined }),
       setPromo: (promo) => set({ promo }),
     }),
-    { name: 'cc-cart', version: 2, migrate: (state) => ({ ...(state as CartState), promo: undefined }) },
+    {
+      name: 'cc-cart',
+      version: 3,
+      // v3 dropped dine-in: carts saved with it (and its table number) fall back to delivery.
+      migrate: (state) => {
+        const { fulfillment, items } = state as Partial<CartState>
+        return { items: items ?? [], fulfillment: fulfillment === 'pickup' ? 'pickup' : 'delivery' } as CartState
+      },
+    },
   ),
 )
 

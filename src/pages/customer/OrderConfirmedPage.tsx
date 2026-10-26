@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom'
-import { CheckCircle2, ClipboardX, MapPin, Store, UtensilsCrossed } from 'lucide-react'
+import { CheckCircle2, ClipboardX, MapPin, Store } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, ordersApi } from '@/api'
 import { Badge, ButtonLink, Card, CardBody, EmptyState, ErrorState, SkeletonList } from '@/components/ui'
@@ -64,12 +64,11 @@ export default function OrderConfirmedPage() {
       <Card>
         <CardBody className="flex flex-col gap-4 text-sm">
           <p className="flex items-start gap-2">
-            {o.fulfillment === 'delivery' ? <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> : o.fulfillment === 'pickup' ? <Store className="mt-0.5 h-4 w-4 shrink-0" /> : <UtensilsCrossed className="mt-0.5 h-4 w-4 shrink-0" />}
+            {o.fulfillment === 'delivery' ? <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> : <Store className="mt-0.5 h-4 w-4 shrink-0" />}
             <span>
               <span className="font-semibold">{t(`fulfillment.${o.fulfillment}`)}</span>
               {o.fulfillment === 'delivery' && o.address && <span className="block text-ink-soft">{`${o.address.street}, ${o.address.area}`}</span>}
               {o.fulfillment === 'pickup' && <span className="block text-ink-soft">{`${settings.address.street}, ${settings.address.area}`}</span>}
-              {o.fulfillment === 'dine-in' && <span className="block text-ink-soft">Table {o.tableNumber}</span>}
             </span>
           </p>
           <ul className="flex flex-col gap-2 border-t border-line pt-3">

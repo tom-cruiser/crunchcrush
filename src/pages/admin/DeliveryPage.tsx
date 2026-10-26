@@ -78,7 +78,7 @@ export default function DeliveryPage() {
           <SkeletonList rows={3} />
         ) : zones.data.length === 0 ? (
           <Card>
-            <EmptyState icon={<MapPin className="h-6 w-6" />} title="No delivery zones" description="Without a zone, customers can only pick up or dine in." action={<Button onClick={() => setEditing('new')}>Add zone</Button>} />
+            <EmptyState icon={<MapPin className="h-6 w-6" />} title="No delivery zones" description="Without a zone, customers can only pick up." action={<Button onClick={() => setEditing('new')}>Add zone</Button>} />
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-[240px_1fr]">
