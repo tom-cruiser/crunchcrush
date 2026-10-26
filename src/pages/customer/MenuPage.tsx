@@ -194,12 +194,12 @@ export default function MenuPage() {
             <InstallPrompt />
             <FeaturedRail title={t('menu.popularRail')} items={featured} onOpen={openItemSheet} />
             <div>
-              <CategoryBar categories={sections.map((s) => s.category)} />
+              <CategoryBar categories={sections.map((s) => s.category)} filterCount={filterCount} onOpenFilters={() => setFiltersOpen(true)} />
               <div className="flex flex-col gap-8 pt-5">
                 {sections.map(({ category, items }) => {
                   const inWindow = isWithinWindow(category.availableFrom, category.availableTo)
                   return (
-                    <section key={category.id} id={sectionId(category.id)} aria-labelledby={`${sectionId(category.id)}-h`} className="scroll-mt-32">
+                    <section key={category.id} id={sectionId(category.id)} aria-labelledby={`${sectionId(category.id)}-h`} className="scroll-mt-36">
                       <h2 id={`${sectionId(category.id)}-h`} className="text-xl font-extrabold">
                         {category.name}
                       </h2>

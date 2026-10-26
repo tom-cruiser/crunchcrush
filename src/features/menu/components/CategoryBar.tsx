@@ -1,14 +1,31 @@
 import { useEffect, useRef, useState } from 'react'
+import { CupSoda, EggFried, IceCreamCone, Package, Popcorn, Sandwich, SlidersHorizontal, Sunrise, UtensilsCrossed, type LucideIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/cn'
 import type { MenuCategory } from '@/types'
 
 export const sectionId = (categoryId: string) => `section-${categoryId}`
 
+/** Icons for the built-in categories; categories added later in admin get the generic one. */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'cat-tacos': Sandwich,
+  'cat-rolex': EggFried,
+  'cat-breakfast': Sunrise,
+  'cat-combos': Package,
+  'cat-sides': Popcorn,
+  'cat-drinks': CupSoda,
+  'cat-desserts': IceCreamCone,
+}
+
+const chipClass = 'flex h-11 shrink-0 items-center gap-2 rounded-full border bg-surface px-4 text-sm font-semibold whitespace-nowrap transition-colors'
+
 /**
  * Sticky chip bar that highlights the category in view (scroll spy) and jumps to a
  * section on tap. Sections need `scroll-mt-*` so they land below the sticky bars.
+ * A Filters chip leads the bar so filters stay reachable while scrolling.
  */
-export function CategoryBar({ categories }: { categories: MenuCategory[] }) {
+export function CategoryBar({ categories, filterCount, onOpenFilters }: { categories: MenuCategory[]; filterCount: number; onOpenFilters: () => void }) {
+  const { t } = useTranslation()
   const [active, setActive] = useState(categories[0]?.id)
   const barRef = useRef<HTMLDivElement>(null)
   const lockUntil = useRef(0)
@@ -25,7 +42,7 @@ export function CategoryBar({ categories }: { categories: MenuCategory[] }) {
         const first = categories.find((c) => visible.get(sectionId(c.id)))
         if (first) setActive(first.id)
       },
-      { rootMargin: '-140px 0px -55% 0px' },
+      { rootMargin: '-150px 0px -55% 0px' },
     )
     sections.forEach((s) => observer.observe(s))
     return () => observer.disconnect()
@@ -47,25 +64,32 @@ export function CategoryBar({ categories }: { categories: MenuCategory[] }) {
 
   return (
     <nav aria-label="Menu categories" className="sticky top-16 z-20 -mx-4 border-b border-line bg-surface/95 backdrop-blur">
-      <div ref={barRef} className="scrollbar-none flex gap-6 overflow-x-auto px-4">
-        {categories.map((c) => (
-          <a
-            key={c.id}
-            href={`#${sectionId(c.id)}`}
-            data-category={c.id}
-            aria-current={active === c.id ? 'true' : undefined}
-            onClick={(e) => {
-              e.preventDefault()
-              jump(c.id)
-            }}
-            className={cn(
-              'shrink-0 border-b-2 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors',
-              active === c.id ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink',
-            )}
-          >
-            {c.name}
-          </a>
-        ))}
+      <div ref={barRef} className="scrollbar-none flex items-center gap-2 overflow-x-auto px-4 py-3">
+        <button type="button" onClick={onOpenFilters} className={cn(chipClass, filterCount ? 'border-ink' : 'border-line hover:border-ink')}>
+          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+          {t('menu.filters')}
+          {filterCount > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs text-brand-fg">{filterCount}</span>}
+        </button>
+        <span className="mx-1 h-7 w-px shrink-0 bg-line" aria-hidden="true" />
+        {categories.map((c) => {
+          const Icon = CATEGORY_ICONS[c.id] ?? UtensilsCrossed
+          return (
+            <a
+              key={c.id}
+              href={`#${sectionId(c.id)}`}
+              data-category={c.id}
+              aria-current={active === c.id ? 'true' : undefined}
+              onClick={(e) => {
+                e.preventDefault()
+                jump(c.id)
+              }}
+              className={cn(chipClass, active === c.id ? 'border-ink text-ink ring-1 ring-ink' : 'border-line text-ink-soft hover:border-ink hover:text-ink')}
+            >
+              <Icon className="h-4 w-4" aria-hidden="true" />
+              {c.name}
+            </a>
+          )
+        })}
       </div>
     </nav>
   )
