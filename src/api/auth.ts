@@ -42,7 +42,9 @@ export function verifyOtp(phone: string, code: string): Promise<Session<User>> {
 export function loginWithEmail(email: string, password: string): Promise<Session<User>> {
   return mock(
     () => {
-      const user = db.customers.find((c) => c.email?.toLowerCase() === email.trim().toLowerCase())
+      const normalized = email.trim().toLowerCase()
+      const user = db.customers.find((c) => c.email?.toLowerCase() === normalized)
+      if (!user && db.staff.some((s) => s.email.toLowerCase() === normalized)) throw new ApiError('staff_account', 'This is a staff account. Sign in on the staff login page.')
       if (!user || password.length < 6) throw new ApiError('invalid_credentials', 'Email or password is incorrect.')
       return { token: `mock-${user.id}`, user }
     },

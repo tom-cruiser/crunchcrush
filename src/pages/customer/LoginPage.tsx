@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { authApi } from '@/api'
+import { ApiError, authApi } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
 import { isRwMobile, normalizeRwPhone } from '@/features/checkout/schema'
 import { cn } from '@/lib/cn'
@@ -110,11 +110,15 @@ function PhoneLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
 function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) => void }) {
   const { t } = useTranslation()
   const form = useForm<z.infer<typeof emailSchema>>({ resolver: zodResolver(emailSchema), defaultValues: { email: '', password: '' } })
+  const [staffAccount, setStaffAccount] = useState(false)
   const submit = async ({ email, password }: z.infer<typeof emailSchema>) => {
+    setStaffAccount(false)
     try {
       const session = await authApi.loginWithEmail(email, password)
       onSignedIn(session.user, session.token)
     } catch (e) {
+      // Staff typed their work email here: point them at the staff sign-in instead.
+      if (e instanceof ApiError && e.code === 'staff_account') setStaffAccount(true)
       form.setError('password', { message: (e as Error).message })
     }
   }
@@ -125,6 +129,11 @@ function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
       <Button type="submit" fullWidth size="lg" loading={form.formState.isSubmitting}>
         {t('auth.signIn')}
       </Button>
+      {staffAccount && (
+        <Link to="/admin/login" className="text-center text-sm font-semibold underline underline-offset-2">
+          {t('auth.goToStaffLogin')}
+        </Link>
+      )}
     </form>
   )
 }
