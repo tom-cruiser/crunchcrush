@@ -87,11 +87,11 @@ export default function CartPage() {
       <Card>
         <CardBody className="flex flex-col gap-4">
           <PromoCodeInput subtotal={pricing.subtotal} />
-          <PriceSummary pricing={pricing} settings={settings.data} promo={promo} deliveryPending={fulfillment === 'delivery'} />
+          <PriceSummary pricing={pricing} settings={settings.data} promo={promo} deliveryPending={fulfillment === 'delivery'} showDelivery={fulfillment === 'delivery'} />
         </CardBody>
       </Card>
 
-      <div className="pb-safe sticky bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-20 flex flex-col gap-2 bg-surface/95 py-3 backdrop-blur md:bottom-0">
+      <div className="pb-safe sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 flex flex-col gap-2 bg-surface/95 py-3 backdrop-blur md:bottom-0">
         {missing > 0 && (
           <p role="status" className="text-center text-sm font-semibold">
             {t('cart.minOrder', { amount: formatMoney(settings.data.minimumOrder), missing: formatMoney(missing) })}

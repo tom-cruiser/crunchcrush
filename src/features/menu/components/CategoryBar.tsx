@@ -47,7 +47,7 @@ export function CategoryBar({ categories }: { categories: MenuCategory[] }) {
 
   return (
     <nav aria-label="Menu categories" className="sticky top-16 z-20 -mx-4 border-b border-line bg-surface/95 backdrop-blur">
-      <div ref={barRef} className="scrollbar-none flex gap-2 overflow-x-auto px-4 py-2.5">
+      <div ref={barRef} className="scrollbar-none flex gap-6 overflow-x-auto px-4">
         {categories.map((c) => (
           <a
             key={c.id}
@@ -59,8 +59,8 @@ export function CategoryBar({ categories }: { categories: MenuCategory[] }) {
               jump(c.id)
             }}
             className={cn(
-              'shrink-0 rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors',
-              active === c.id ? 'bg-brand text-brand-fg' : 'bg-muted text-ink-soft hover:text-ink',
+              'shrink-0 border-b-2 py-3.5 text-sm font-semibold whitespace-nowrap transition-colors',
+              active === c.id ? 'border-ink text-ink' : 'border-transparent text-ink-soft hover:text-ink',
             )}
           >
             {c.name}

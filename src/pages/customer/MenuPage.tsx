@@ -95,21 +95,60 @@ export default function MenuPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <header className="flex flex-col gap-3">
-        <img src={settings.coverUrl} alt="" width={1200} height={400} fetchPriority="high" decoding="async" className="aspect-[3/1] w-full rounded-card bg-muted object-cover" />
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-2xl font-extrabold">{settings.name}</h1>
-            <p className="text-sm text-ink-soft">{settings.tagline}</p>
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-soft">
-              <Clock className="h-4 w-4" aria-hidden="true" />
-              {status.open ? `${t('store.open')} · ${status.todayHours}` : status.holidayReason ? `${t('store.closed')} · ${status.holidayReason}` : t('store.closed')}
-            </p>
+      <header className="relative -mx-4 -mt-4 overflow-hidden bg-brand px-5 pt-6 pb-14 text-brand-fg md:mx-0 md:mt-0 md:rounded-card md:px-10 md:pt-10 md:pb-12">
+        <img src={settings.coverUrl} alt="" width={1200} height={800} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover object-right opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand via-brand/80 to-brand/10" aria-hidden="true" />
+        <div className="relative flex flex-col gap-5 md:max-w-lg">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs font-semibold tracking-[0.2em] text-white/70 uppercase">{t('menu.heroKicker')}</p>
+            <button type="button" onClick={() => setInfoOpen(true)} aria-label={t('menu.info')} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface text-ink shadow-lg">
+              <Info className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
-          <Button variant="outline" size="sm" leftIcon={<Info className="h-4 w-4" />} onClick={() => setInfoOpen(true)}>
-            {t('menu.info')}
-          </Button>
+          <div className="-mt-4">
+            <h1 className="font-display text-5xl leading-[0.95] font-bold tracking-tight md:text-6xl">
+              {settings.name.split(' ')[0]}{' '}
+              <span className="block italic font-normal">{settings.name.split(' ').slice(1).join(' ')}</span>
+            </h1>
+            <p className="mt-3 max-w-60 text-sm text-white/75">{settings.tagline}</p>
+          </div>
+          <p className="flex items-center gap-2 text-sm font-medium">
+            <span className={`h-2 w-2 rounded-full ${status.open ? 'bg-green-400' : 'bg-red-400'}`} aria-hidden="true" />
+            <Clock className="h-4 w-4 text-white/70" aria-hidden="true" />
+            {status.open ? `${t('store.open')} · ${status.todayHours}` : status.holidayReason ? `${t('store.closed')} · ${status.holidayReason}` : t('store.closed')}
+          </p>
+          <div role="search" className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                aria-label={t('common.search')}
+                type="search"
+                enterKeyHint="search"
+                placeholder={t('menu.searchPlaceholder')}
+                leftIcon={<Search className="h-4 w-4" />}
+                value={filters.query}
+                onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+                className="rounded-full border-0 pr-10 text-ink [&::-webkit-search-cancel-button]:hidden"
+              />
+              {filters.query && (
+                <button type="button" aria-label="Clear search" onClick={() => setFilters({ ...filters, query: '' })} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-ink-soft hover:bg-muted">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              aria-label={`${t('menu.filters')}${filterCount ? ` (${filterCount})` : ''}`}
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface text-ink"
+            >
+              <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              {filterCount > 0 && <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface px-1 text-xs font-bold text-ink ring-2 ring-brand">{filterCount}</span>}
+            </button>
+          </div>
         </div>
+      </header>
+
+      <div className="relative -mx-4 -mt-12 flex flex-col gap-5 rounded-t-[1.75rem] bg-surface px-4 pt-6 md:mx-0 md:mt-0 md:rounded-none md:px-0 md:pt-2">
         {!status.open && (
           <p role="status" className="flex items-start gap-2 rounded-xl bg-muted px-4 py-3 text-sm font-medium">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
@@ -122,93 +161,69 @@ export default function MenuPage() {
             {t('menu.busyBanner', { count: settings.busyExtraMinutes })}
           </p>
         )}
-      </header>
+        <h2 className="text-3xl font-extrabold tracking-tight">{t('nav.menu')}</h2>
 
-      <div role="search" className="flex gap-2">
-        <div className="relative flex-1">
-          <Input
-            aria-label={t('common.search')}
-            type="search"
-            enterKeyHint="search"
-            placeholder={t('menu.searchPlaceholder')}
-            leftIcon={<Search className="h-4 w-4" />}
-            value={filters.query}
-            onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-            className="pr-10 [&::-webkit-search-cancel-button]:hidden"
-          />
-          {filters.query && (
-            <button type="button" aria-label="Clear search" onClick={() => setFilters({ ...filters, query: '' })} className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-ink-soft hover:bg-muted">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <Button variant={filterCount ? 'primary' : 'outline'} className="h-12" onClick={() => setFiltersOpen(true)} aria-label={`${t('menu.filters')}${filterCount ? ` (${filterCount})` : ''}`}>
-          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">{t('menu.filters')}</span>
-          {filterCount > 0 && <span className="rounded-full bg-surface px-1.5 text-xs text-ink">{filterCount}</span>}
-        </Button>
-      </div>
-
-      {menu.data.items.length === 0 ? (
-        <EmptyState icon={<UtensilsCrossed className="h-6 w-6" />} title={t('menu.emptyMenu')} description={t('menu.emptyMenuBody')} />
-      ) : searching ? (
-        <section aria-live="polite" aria-label="Search results">
-          <p className="mb-3 text-sm font-semibold text-ink-soft">{t('menu.results', { count: results.length })}</p>
-          {results.length === 0 ? (
-            <EmptyState
-              icon={<SearchX className="h-6 w-6" />}
-              title={t('menu.noResults')}
-              description={t('menu.noResultsBody')}
-              action={
-                <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)}>
-                  {t('menu.clearFilters')}
-                </Button>
-              }
-            />
-          ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
-              {results.map((item) => (
-                <li key={item.id}>
-                  <MenuItemCard item={item} unavailableReason={reasonFor(item)} onOpen={openItemSheet} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ) : (
-        <>
-          <InstallPrompt />
-          <FeaturedRail title={t('menu.popularRail')} items={featured} onOpen={openItemSheet} />
-          <div>
-            <CategoryBar categories={sections.map((s) => s.category)} />
-            <div className="flex flex-col gap-8 pt-5">
-              {sections.map(({ category, items }) => {
-                const inWindow = isWithinWindow(category.availableFrom, category.availableTo)
-                return (
-                  <section key={category.id} id={sectionId(category.id)} aria-labelledby={`${sectionId(category.id)}-h`} className="scroll-mt-32">
-                    <h2 id={`${sectionId(category.id)}-h`} className="text-xl font-extrabold">
-                      {category.name}
-                    </h2>
-                    {category.description && <p className="text-sm text-ink-soft">{category.description}</p>}
-                    {!inWindow && (
-                      <p className="mt-1 text-sm font-semibold">
-                        Available {category.availableFrom}–{category.availableTo}
-                      </p>
-                    )}
-                    <ul className="mt-3 grid gap-3 md:grid-cols-2">
-                      {items.map((item) => (
-                        <li key={item.id}>
-                          <MenuItemCard item={item} unavailableReason={reasonFor(item)} onOpen={openItemSheet} />
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )
-              })}
+        {menu.data.items.length === 0 ? (
+          <EmptyState icon={<UtensilsCrossed className="h-6 w-6" />} title={t('menu.emptyMenu')} description={t('menu.emptyMenuBody')} />
+        ) : searching ? (
+          <section aria-live="polite" aria-label="Search results">
+            <p className="mb-3 text-sm font-semibold text-ink-soft">{t('menu.results', { count: results.length })}</p>
+            {results.length === 0 ? (
+              <EmptyState
+                icon={<SearchX className="h-6 w-6" />}
+                title={t('menu.noResults')}
+                description={t('menu.noResultsBody')}
+                action={
+                  <Button variant="outline" onClick={() => setFilters(EMPTY_FILTERS)}>
+                    {t('menu.clearFilters')}
+                  </Button>
+                }
+              />
+            ) : (
+              <ul className="grid gap-3 md:grid-cols-2">
+                {results.map((item) => (
+                  <li key={item.id}>
+                    <MenuItemCard item={item} unavailableReason={reasonFor(item)} onOpen={openItemSheet} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : (
+          <>
+            <InstallPrompt />
+            <FeaturedRail title={t('menu.popularRail')} items={featured} onOpen={openItemSheet} />
+            <div>
+              <CategoryBar categories={sections.map((s) => s.category)} />
+              <div className="flex flex-col gap-8 pt-5">
+                {sections.map(({ category, items }) => {
+                  const inWindow = isWithinWindow(category.availableFrom, category.availableTo)
+                  return (
+                    <section key={category.id} id={sectionId(category.id)} aria-labelledby={`${sectionId(category.id)}-h`} className="scroll-mt-32">
+                      <h2 id={`${sectionId(category.id)}-h`} className="text-xl font-extrabold">
+                        {category.name}
+                      </h2>
+                      {category.description && <p className="text-sm text-ink-soft">{category.description}</p>}
+                      {!inWindow && (
+                        <p className="mt-1 text-sm font-semibold">
+                          Available {category.availableFrom}–{category.availableTo}
+                        </p>
+                      )}
+                      <ul className="mt-3 grid gap-3 md:grid-cols-2">
+                        {items.map((item) => (
+                          <li key={item.id}>
+                            <MenuItemCard item={item} unavailableReason={reasonFor(item)} onOpen={openItemSheet} />
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
 
       <footer className="mt-4 border-t border-line pt-4 text-center text-xs text-ink-soft">
         <Link to="/admin" className="underline underline-offset-2">

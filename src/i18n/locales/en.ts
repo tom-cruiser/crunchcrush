@@ -31,7 +31,7 @@ const en = {
     skipToContent: 'Skip to content',
   },
   menu: {
-    searchPlaceholder: 'Search tacos, roll-eggs, drinks…',
+    searchPlaceholder: 'Search tacos, roll-eggs…',
     filters: 'Filters',
     clearFilters: 'Clear all',
     showResults: 'Show {{count}} items',
@@ -41,6 +41,7 @@ const en = {
     popular: 'Popular',
     recommended: 'Chef’s picks',
     popularRail: 'Popular right now',
+    heroKicker: 'Tacos · Roll-Eggs · Kigali',
     results_one: '{{count}} result',
     results_other: '{{count}} results',
     noResults: 'Nothing matches',
