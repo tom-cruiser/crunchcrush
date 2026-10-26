@@ -1,18 +1,60 @@
-import { Clock } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatMoney } from '@/lib/format'
 import type { MenuItem } from '@/types'
 
-/** Horizontally scrolling strip of popular and recommended items. */
+const arrowClass = 'flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-opacity hover:border-ink disabled:pointer-events-none disabled:opacity-30'
+
+/** Horizontally scrolling strip of popular and recommended items, with arrow buttons to page through it. */
 export function FeaturedRail({ title, items, onOpen }: { title: string; items: MenuItem[]; onOpen: (item: MenuItem) => void }) {
   const { t } = useTranslation()
+  const listRef = useRef<HTMLUListElement>(null)
+  const [edges, setEdges] = useState({ start: true, end: true })
+
+  const updateEdges = useCallback(() => {
+    const list = listRef.current
+    const first = list?.firstElementChild
+    const last = list?.lastElementChild
+    if (!list || !first || !last) return
+    // Compare card edges, not scroll offsets: snapping stops short of the true scroll end.
+    const box = list.getBoundingClientRect()
+    setEdges({ start: first.getBoundingClientRect().left >= box.left - 1, end: last.getBoundingClientRect().right <= box.right + 1 })
+  }, [])
+
+  useEffect(() => {
+    updateEdges()
+    window.addEventListener('resize', updateEdges)
+    return () => window.removeEventListener('resize', updateEdges)
+  }, [updateEdges, items])
+
+  const page = (direction: 1 | -1) => {
+    const list = listRef.current
+    if (!list) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Most of a screen at a time, so the last card in view stays visible for context.
+    list.scrollBy({ left: direction * Math.max(list.clientWidth * 0.8, 180), behavior: reduce ? 'auto' : 'smooth' })
+  }
+
   if (!items.length) return null
   return (
     <section aria-labelledby="featured-heading">
-      <h2 id="featured-heading" className="mb-3 text-lg font-extrabold">
-        {title}
-      </h2>
-      <ul className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 id="featured-heading" className="text-lg font-extrabold">
+          {title}
+        </h2>
+        {!(edges.start && edges.end) && (
+          <div className="flex gap-2">
+            <button type="button" onClick={() => page(-1)} disabled={edges.start} aria-label={t('menu.scrollBack')} className={arrowClass}>
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button type="button" onClick={() => page(1)} disabled={edges.end} aria-label={t('menu.scrollForward')} className={arrowClass}>
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+      </div>
+      <ul ref={listRef} onScroll={updateEdges} className="scrollbar-none -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
         {items.map((item) => (
           <li key={item.id} className="w-44 shrink-0 snap-start sm:w-52">
             <button type="button" onClick={() => onOpen(item)} className="group flex h-full w-full flex-col overflow-hidden rounded-2xl bg-brand text-left text-brand-fg shadow-sm">
