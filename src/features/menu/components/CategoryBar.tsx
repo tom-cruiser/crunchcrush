@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
-import { CupSoda, EggFried, IceCreamCone, Package, Popcorn, Sandwich, SlidersHorizontal, Sunrise, UtensilsCrossed, type LucideIcon } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { CupSoda, EggFried, IceCreamCone, LayoutGrid, Package, Popcorn, Sandwich, SlidersHorizontal, Sunrise, UtensilsCrossed, type LucideIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/cn'
-import type { MenuCategory } from '@/types'
+import type { ID, MenuCategory } from '@/types'
 
 export const sectionId = (categoryId: string) => `section-${categoryId}`
+
+/** Shown when no single category is chosen. */
+export const ALL_CATEGORIES = 'all'
 
 /** Icons for the built-in categories; categories added later in admin get the generic one. */
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -19,48 +22,32 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
 
 const chipClass = 'flex h-11 shrink-0 items-center gap-2 rounded-full border bg-surface px-4 text-sm font-semibold whitespace-nowrap transition-colors'
 
+interface CategoryBarProps {
+  categories: MenuCategory[]
+  /** A category id, or ALL_CATEGORIES. */
+  selected: ID
+  onSelect: (id: ID) => void
+  filterCount: number
+  onOpenFilters: () => void
+}
+
 /**
- * Sticky chip bar that highlights the category in view (scroll spy) and jumps to a
- * section on tap. Sections need `scroll-mt-*` so they land below the sticky bars.
- * A Filters chip leads the bar so filters stay reachable while scrolling.
+ * Sticky chip bar that filters the menu below it: "All" shows every category, any
+ * other chip shows only that one. A Filters chip leads the bar so filters stay
+ * reachable while scrolling.
  */
-export function CategoryBar({ categories, filterCount, onOpenFilters }: { categories: MenuCategory[]; filterCount: number; onOpenFilters: () => void }) {
+export function CategoryBar({ categories, selected, onSelect, filterCount, onOpenFilters }: CategoryBarProps) {
   const { t } = useTranslation()
-  const [active, setActive] = useState(categories[0]?.id)
   const barRef = useRef<HTMLDivElement>(null)
-  const lockUntil = useRef(0)
 
+  // Keep the selected chip visible inside the horizontally scrolling bar.
   useEffect(() => {
-    const sections = categories.map((c) => document.getElementById(sectionId(c.id))).filter((el): el is HTMLElement => Boolean(el))
-    if (!sections.length) return
-    const visible = new Map<string, boolean>()
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) visible.set(e.target.id, e.isIntersecting)
-        if (Date.now() < lockUntil.current) return
-        // First section (in menu order) whose top band is on screen.
-        const first = categories.find((c) => visible.get(sectionId(c.id)))
-        if (first) setActive(first.id)
-      },
-      { rootMargin: '-150px 0px -55% 0px' },
-    )
-    sections.forEach((s) => observer.observe(s))
-    return () => observer.disconnect()
-  }, [categories])
-
-  // Keep the active chip visible inside the horizontally scrolling bar.
-  useEffect(() => {
-    const chip = barRef.current?.querySelector<HTMLElement>(`[data-category="${active}"]`)
     const bar = barRef.current
+    const chip = bar?.querySelector<HTMLElement>(`[data-category="${selected}"]`)
     if (chip && bar) bar.scrollTo({ left: chip.offsetLeft - bar.clientWidth / 2 + chip.clientWidth / 2, behavior: 'smooth' })
-  }, [active])
+  }, [selected])
 
-  const jump = (id: string) => {
-    setActive(id)
-    lockUntil.current = Date.now() + 800
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    document.getElementById(sectionId(id))?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
-  }
+  const chips = [{ id: ALL_CATEGORIES, name: t('menu.allCategories'), Icon: LayoutGrid }, ...categories.map((c) => ({ id: c.id, name: c.name, Icon: CATEGORY_ICONS[c.id] ?? UtensilsCrossed }))]
 
   return (
     <nav aria-label="Menu categories" className="sticky top-16 z-20 -mx-4 border-b border-line bg-surface/95 backdrop-blur">
@@ -71,25 +58,19 @@ export function CategoryBar({ categories, filterCount, onOpenFilters }: { catego
           {filterCount > 0 && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs text-brand-fg">{filterCount}</span>}
         </button>
         <span className="mx-1 h-7 w-px shrink-0 bg-line" aria-hidden="true" />
-        {categories.map((c) => {
-          const Icon = CATEGORY_ICONS[c.id] ?? UtensilsCrossed
-          return (
-            <a
-              key={c.id}
-              href={`#${sectionId(c.id)}`}
-              data-category={c.id}
-              aria-current={active === c.id ? 'true' : undefined}
-              onClick={(e) => {
-                e.preventDefault()
-                jump(c.id)
-              }}
-              className={cn(chipClass, active === c.id ? 'border-ink text-ink ring-1 ring-ink' : 'border-line text-ink-soft hover:border-ink hover:text-ink')}
-            >
-              <Icon className="h-4 w-4" aria-hidden="true" />
-              {c.name}
-            </a>
-          )
-        })}
+        {chips.map(({ id, name, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            data-category={id}
+            aria-pressed={selected === id}
+            onClick={() => onSelect(id)}
+            className={cn(chipClass, selected === id ? 'border-ink text-ink ring-1 ring-ink' : 'border-line text-ink-soft hover:border-ink hover:text-ink')}
+          >
+            <Icon className="h-4 w-4" aria-hidden="true" />
+            {name}
+          </button>
+        ))}
       </div>
     </nav>
   )

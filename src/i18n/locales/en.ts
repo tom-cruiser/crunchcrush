@@ -42,6 +42,7 @@ const en = {
     recommended: 'Chef’s picks',
     popularRail: 'Popular right now',
     heroKicker: 'Tacos · Roll-Eggs · Kigali',
+    allCategories: 'All',
     scrollBack: 'Show previous items',
     scrollForward: 'Show more items',
     results_one: '{{count}} result',

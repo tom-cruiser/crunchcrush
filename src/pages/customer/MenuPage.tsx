@@ -1,10 +1,10 @@
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { AlertCircle, Clock, Info, SearchX, SlidersHorizontal, Search, UtensilsCrossed, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, EmptyState, ErrorState, Input, Skeleton, SkeletonList } from '@/components/ui'
 import { CartBar } from '@/features/menu/components/CartBar'
-import { CategoryBar, sectionId } from '@/features/menu/components/CategoryBar'
+import { ALL_CATEGORIES, CategoryBar, sectionId } from '@/features/menu/components/CategoryBar'
 import { FeaturedRail } from '@/features/menu/components/FeaturedRail'
 import { FilterSheet } from '@/features/menu/components/FilterSheet'
 import { ItemSheet } from '@/features/menu/components/ItemSheet'
@@ -43,6 +43,7 @@ export default function MenuPage() {
   const deferredFilters = useDeferredValue(filters)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
+  const categoriesRef = useRef<HTMLDivElement>(null)
 
   const openItemId = params.get('item')
   const openItem = openItemId ? menu.data?.itemsById.get(openItemId) : undefined
@@ -85,6 +86,25 @@ export default function MenuPage() {
     () => menu.data?.categories.map((c) => ({ category: c, items: menu.data!.items.filter((i) => i.categoryId === c.id) })).filter((s) => s.items.length > 0) ?? [],
     [menu.data],
   )
+
+  // The chosen category lives in the URL (?category=…) so back and shared links keep it.
+  const selectedCategory = sections.some((s) => s.category.id === params.get('category')) ? params.get('category')! : ALL_CATEGORIES
+  const visibleSections = selectedCategory === ALL_CATEGORIES ? sections : sections.filter((s) => s.category.id === selectedCategory)
+
+  const selectCategory = (id: string) => {
+    setParams(
+      (p) => {
+        const next = new URLSearchParams(p)
+        if (id === ALL_CATEGORIES) next.delete('category')
+        else next.set('category', id)
+        return next
+      },
+      { replace: true },
+    )
+    // If the bar is already pinned, bring the top of the new list up under it.
+    const top = categoriesRef.current?.getBoundingClientRect().top
+    if (top !== undefined && top < 64) window.scrollTo({ top: window.scrollY + top - 64 })
+  }
 
   if (menu.error && !menu.data) return <ErrorState error={menu.error} onRetry={menu.reload} />
   if (!menu.data || !settings) return <MenuSkeleton />
@@ -193,10 +213,10 @@ export default function MenuPage() {
           <>
             <InstallPrompt />
             <FeaturedRail title={t('menu.popularRail')} items={featured} onOpen={openItemSheet} />
-            <div>
-              <CategoryBar categories={sections.map((s) => s.category)} filterCount={filterCount} onOpenFilters={() => setFiltersOpen(true)} />
+            <div ref={categoriesRef}>
+              <CategoryBar categories={sections.map((s) => s.category)} selected={selectedCategory} onSelect={selectCategory} filterCount={filterCount} onOpenFilters={() => setFiltersOpen(true)} />
               <div className="flex flex-col gap-8 pt-5">
-                {sections.map(({ category, items }) => {
+                {visibleSections.map(({ category, items }) => {
                   const inWindow = isWithinWindow(category.availableFrom, category.availableTo)
                   return (
                     <section key={category.id} id={sectionId(category.id)} aria-labelledby={`${sectionId(category.id)}-h`} className="scroll-mt-36">
