@@ -4,6 +4,9 @@ This document describes everything the Crunch Crust frontend expects from a back
 the endpoints, the data they send and return, the rules the server must enforce, and
 the parts of the current mock that must **not** be copied into production.
 
+To plug a finished backend into the app, step by step, see
+[`CONNECTING-THE-BACKEND.md`](CONNECTING-THE-BACKEND.md).
+
 Read it alongside the code. When the two disagree, the code wins:
 
 | What | Where |
