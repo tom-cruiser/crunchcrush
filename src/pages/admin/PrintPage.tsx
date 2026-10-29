@@ -132,7 +132,8 @@ export default function PrintPage() {
         </Button>
       </div>
       <article className="mx-auto w-[80mm] bg-white p-3 font-mono text-xs leading-snug text-black shadow print:w-full print:p-0 print:shadow-none">
-        {type === 'kitchen' ? <KitchenTicket order={order.data} /> : <Receipt order={order.data} settings={settings} />}
+        {/* Kitchen staff get orders without prices from the server, so they can only print the ticket. */}
+        {type === 'kitchen' || !order.data.pricing ? <KitchenTicket order={order.data} /> : <Receipt order={order.data} settings={settings} />}
       </article>
     </div>
   )

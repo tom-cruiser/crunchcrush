@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { FulfillmentType, PaymentMethod, RestaurantSettings, Weekday } from '@/types'
+import type { SettingsPatch } from '@/api/settings'
 
 export const WEEK: Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 export const PAYMENT_METHODS: PaymentMethod[] = ['mtn_momo', 'airtel_money', 'card', 'cash']
@@ -54,11 +55,11 @@ export function toValues(s: RestaurantSettings): SettingsValues {
   }
 }
 
-export function toPatch(v: SettingsValues, current: RestaurantSettings): Partial<RestaurantSettings> {
+export function toPatch(v: SettingsValues, current: RestaurantSettings): SettingsPatch {
   const { street, area, whatsapp, ...rest } = v
   return {
     ...rest,
-    whatsapp: whatsapp || undefined,
+    whatsapp: whatsapp || null,
     address: { ...current.address, street, area },
     // Keep the canonical order so the customer app lists them consistently.
     enabledPaymentMethods: PAYMENT_METHODS.filter((m) => v.enabledPaymentMethods.includes(m)),

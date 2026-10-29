@@ -34,8 +34,8 @@ const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'))
 const MenuManagementPage = lazy(() => import('@/pages/admin/menu/MenuManagementPage'))
 const ItemEditorPage = lazy(() => import('@/pages/admin/menu/ItemEditorPage'))
 const AdminLoginPage = lazy(() => import('@/pages/admin/AdminLoginPage'))
+const StaffPasswordPage = lazy(() => import('@/pages/admin/StaffPasswordPage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
-const UiKitPage = lazy(() => import('@/pages/dev/UiKitPage'))
 
 export const router = createBrowserRouter([
   {
@@ -59,11 +59,12 @@ export const router = createBrowserRouter([
           { path: 'account/addresses', element: <RequireCustomer><AddressesPage /></RequireCustomer> },
           { path: 'account/favourites', element: <RequireCustomer><FavouritesPage /></RequireCustomer> },
           { path: 'login', element: <LoginPage /> },
-          { path: 'dev/ui', element: <UiKitPage /> },
           { path: '*', element: <NotFoundPage /> },
         ],
       },
       { path: 'admin/login', element: <AdminLoginPage /> },
+      { path: 'admin/setup-password', element: <StaffPasswordPage mode="setup" /> },
+      { path: 'admin/reset-password', element: <StaffPasswordPage mode="reset" /> },
       { path: 'admin/print/:orderId', element: <Suspense fallback={null}><RequireStaff permission="orders.view"><PrintPage /></RequireStaff></Suspense> },
       {
         path: 'admin',

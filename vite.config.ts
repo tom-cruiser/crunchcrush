@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // The backend (backend/, port 4000) answers /api in development. API_PROXY points elsewhere.
+  server: { proxy: { '/api': process.env.API_PROXY ?? 'http://localhost:4000' } },
   plugins: [
     react(),
     tailwindcss(),

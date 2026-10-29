@@ -23,7 +23,7 @@ export default function ProfilePage() {
 
   const submit = async (values: z.infer<typeof schema>) => {
     try {
-      setCustomer(await authApi.updateProfile(customer.id, { name: values.name.trim(), email: values.email || undefined }))
+      setCustomer(await authApi.updateProfile(customer.id, { name: values.name.trim(), email: values.email.trim() }))
       form.reset(values)
       toast.success(t('account.saved'))
     } catch (e) {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Bell, BellOff, ClipboardList, Search } from 'lucide-react'
-import { ordersApi, settingsApi } from '@/api'
+import { settingsApi } from '@/api'
 import { Badge, Button, Card, EmptyState, ErrorState, Input, Select, SkeletonList, Switch } from '@/components/ui'
 import { AdminOrderCard } from '@/features/admin/orders/AdminOrderCard'
 import { OrderDetailSheet } from '@/features/admin/orders/OrderDetailSheet'
@@ -10,7 +10,6 @@ import { Can } from '@/features/auth/RequireStaff'
 import { can } from '@/features/auth/permissions'
 import { useSettings } from '@/features/store/useSettings'
 import { cn } from '@/lib/cn'
-import { useAsync } from '@/lib/useAsync'
 import { useAuth } from '@/store/auth'
 import { usePreferences } from '@/store/preferences'
 import { toast } from '@/store/toast'
@@ -33,7 +32,6 @@ export default function LiveOrdersPage() {
   const role = useAuth((s) => s.staff?.role)
   const { soundAlerts, setSoundAlerts } = usePreferences()
   const [soundReady, setSoundReady] = useState(audioUnlocked())
-  const simulation = useAsync(() => ordersApi.getSimulationEnabled(), [], 'simulation')
   const [selectedId, setSelectedId] = useState<string>()
   const [tab, setTab] = useState('new')
   const [fulfillment, setFulfillment] = useState<FulfillmentType | ''>('')
@@ -108,15 +106,6 @@ export default function LiveOrdersPage() {
           <option value="delivery">Delivery</option>
           <option value="pickup">Pickup</option>
         </Select>
-        <Can permission="settings.manage">
-          <Switch
-            size="sm"
-            label="Demo: auto-advance"
-            description="Customer orders move on their own"
-            checked={simulation.data ?? true}
-            onChange={async (on) => simulation.setData(await ordersApi.setSimulationEnabled(on))}
-          />
-        </Can>
       </div>
 
       {/* Phones and tablets: one column at a time. */}

@@ -7,7 +7,7 @@ import { ArrowLeft, ImagePlus } from 'lucide-react'
 import { menuApi } from '@/api'
 import { Button, ButtonLink, Card, EmptyState, ErrorState, Input, Select, SkeletonList, Switch, Textarea } from '@/components/ui'
 import { AddOnsField, OptionGroupsField } from '@/features/admin/menu/OptionGroupsField'
-import { ALLERGENS, DIETARY_TAGS, fromFormValues, itemSchema, resizeImage, toFormValues, type ItemFormValues } from '@/features/admin/menu/itemSchema'
+import { ALLERGENS, DIETARY_TAGS, fromFormValues, itemSchema, toFormValues, type ItemFormValues } from '@/features/admin/menu/itemSchema'
 import { cn } from '@/lib/cn'
 import { formatMoney } from '@/lib/format'
 import { invalidateCache, useAsync } from '@/lib/useAsync'
@@ -85,7 +85,9 @@ function ItemForm({ existing, categories, defaultCategory, nextSortOrder }: Form
     if (!file) return
     setUploading(true)
     try {
-      setValue('imageUrl', await resizeImage(file), { shouldDirty: true, shouldValidate: true })
+      // The server resizes the photo and returns its URL.
+      const { url } = await menuApi.uploadImage(file)
+      setValue('imageUrl', url, { shouldDirty: true, shouldValidate: true })
     } catch (e) {
       toast.error((e as Error).message)
     } finally {

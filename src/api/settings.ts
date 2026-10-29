@@ -1,28 +1,22 @@
 import type { Coordinates, DeliveryZone, ID, RestaurantSettings } from '@/types'
-import { distanceKm } from '@/lib/geo'
-import { uid } from '@/lib/id'
-import { mock } from './client'
-import { db } from './mock/db'
+import { http } from './http'
 
 /** GET /api/settings */
 export function getSettings(): Promise<RestaurantSettings> {
-  return mock(() => db.settings, { minDelay: 150, maxDelay: 300 })
+  return http('/settings')
 }
 
+/** A settings change. `whatsapp: null` removes the WhatsApp number. */
+export type SettingsPatch = Partial<Omit<RestaurantSettings, 'whatsapp'>> & { whatsapp?: string | null }
+
 /** PATCH /api/admin/settings */
-export function updateSettings(patch: Partial<RestaurantSettings>): Promise<RestaurantSettings> {
-  return mock(
-    () => {
-      Object.assign(db.settings, patch)
-      return db.settings
-    },
-    { write: true },
-  )
+export function updateSettings(patch: SettingsPatch): Promise<RestaurantSettings> {
+  return http('/admin/settings', { method: 'PATCH', body: patch })
 }
 
 /** GET /api/delivery-zones */
 export function getDeliveryZones(): Promise<DeliveryZone[]> {
-  return mock(() => [...db.zones].sort((a, b) => a.radiusKm - b.radiusKm))
+  return http('/delivery-zones')
 }
 
 export interface ZoneCheck {
@@ -33,33 +27,15 @@ export interface ZoneCheck {
 
 /** POST /api/delivery-zones/check — finds the smallest active zone containing the point. */
 export function checkDeliveryZone(point: Coordinates): Promise<ZoneCheck> {
-  return mock(() => {
-    const distance = distanceKm(db.settings.address.coordinates, point)
-    const zone = db.zones.filter((z) => z.isActive && distance <= z.radiusKm).sort((a, b) => a.radiusKm - b.radiusKm)[0]
-    return { deliverable: Boolean(zone), distanceKm: Math.round(distance * 10) / 10, zone }
-  })
+  return http('/delivery-zones/check', { method: 'POST', body: point })
 }
 
-/** PUT /api/admin/delivery-zones/:id */
+/** PUT /api/admin/delivery-zones/:id (or POST when new) */
 export function saveDeliveryZone(input: Omit<DeliveryZone, 'id'> & { id?: ID }): Promise<DeliveryZone> {
-  return mock(
-    () => {
-      const zone: DeliveryZone = { ...input, id: input.id ?? uid('zone') }
-      const index = db.zones.findIndex((z) => z.id === zone.id)
-      if (index >= 0) db.zones[index] = zone
-      else db.zones.push(zone)
-      return zone
-    },
-    { write: true },
-  )
+  return input.id ? http(`/admin/delivery-zones/${encodeURIComponent(input.id)}`, { method: 'PUT', body: input }) : http('/admin/delivery-zones', { method: 'POST', body: input })
 }
 
 /** DELETE /api/admin/delivery-zones/:id */
 export function deleteDeliveryZone(id: ID): Promise<void> {
-  return mock(
-    () => {
-      db.zones = db.zones.filter((z) => z.id !== id)
-    },
-    { write: true },
-  )
+  return http(`/admin/delivery-zones/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }

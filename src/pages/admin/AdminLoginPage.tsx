@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { authApi, resetDemoData } from '@/api'
+import { authApi } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
-import { DEMO_PASSWORD, DEMO_STAFF_ACCOUNTS } from '@/features/auth/demoAccounts'
-import { can, homeForRole, ROLE_LABELS } from '@/features/auth/permissions'
+import { can, homeForRole } from '@/features/auth/permissions'
 import { useAuth } from '@/store/auth'
 import { toast } from '@/store/toast'
 
@@ -24,8 +24,9 @@ export default function AdminLoginPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     setError,
+    getValues,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
@@ -43,10 +44,24 @@ export default function AdminLoginPage() {
     }
   }
 
+  const forgotPassword = async () => {
+    if (!(await trigger('email'))) return
+    try {
+      await authApi.requestStaffPasswordReset(getValues('email'))
+      toast.success('If this email has a staff account, a reset link is on its way.')
+    } catch (e) {
+      toast.error((e as Error).message)
+    }
+  }
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-sm">
         <CardBody className="flex flex-col gap-5 p-6">
+          <Link to="/" className="-ml-2 -mt-2 flex w-fit items-center gap-1.5 rounded-full px-2 py-1 text-sm font-semibold text-ink-soft hover:bg-muted hover:text-ink">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            {t('common.back')}
+          </Link>
           <div className="flex flex-col items-center gap-2 text-center">
             <img src="/favicon.svg" alt="" className="h-12 w-12" />
             <h1 className="text-xl font-extrabold">{t('admin.signIn')}</h1>
@@ -57,37 +72,10 @@ export default function AdminLoginPage() {
             <Button type="submit" fullWidth loading={isSubmitting}>
               Sign in
             </Button>
-          </form>
-          <div className="rounded-xl bg-muted p-3 text-xs text-ink-soft">
-            <p className="mb-2 font-semibold text-ink">Demo accounts (password demo1234)</p>
-            <div className="flex flex-wrap gap-1.5">
-              {DEMO_STAFF_ACCOUNTS.map((a) => (
-                <button
-                  key={a.role}
-                  type="button"
-                  className="rounded-full bg-surface px-2.5 py-1 font-semibold text-ink ring-1 ring-line hover:ring-ink"
-                  onClick={() => {
-                    setValue('email', a.email)
-                    setValue('password', DEMO_PASSWORD)
-                  }}
-                >
-                  {ROLE_LABELS[a.role]}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="mt-3 underline underline-offset-2 hover:text-ink"
-              onClick={() => {
-                // The demo database lives in this browser; edits on the Staff page can lock the demo accounts out.
-                if (!window.confirm('Reset all demo data in this browser? Orders and changes you made will be lost.')) return
-                resetDemoData()
-                window.location.reload()
-              }}
-            >
-              Demo accounts not working? Reset demo data
+            <button type="button" onClick={forgotPassword} className="self-center text-sm font-semibold text-ink-soft underline underline-offset-2 hover:text-ink">
+              Forgot password?
             </button>
-          </div>
+          </form>
         </CardBody>
       </Card>
     </div>

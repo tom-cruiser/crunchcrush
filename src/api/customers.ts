@@ -1,6 +1,5 @@
-import type { ID, Money, OrderRating, ProblemReport, User } from '@/types'
-import { mock, notFound } from './client'
-import { db } from './mock/db'
+import type { ID, Money, Order, OrderRating, ProblemReport, User } from '@/types'
+import { http } from './http'
 
 export interface CustomerSummary extends User {
   orderCount: number
@@ -10,17 +9,12 @@ export interface CustomerSummary extends User {
 
 /** GET /api/admin/customers */
 export function listCustomers(): Promise<CustomerSummary[]> {
-  return mock(() =>
-    db.customers.map((c) => {
-      const orders = db.orders.filter((o) => o.customerId === c.id && o.status === 'delivered')
-      return {
-        ...c,
-        orderCount: orders.length,
-        totalSpent: orders.reduce((s, o) => s + o.pricing.total, 0),
-        lastOrderAt: orders.reduce<string | undefined>((latest, o) => (!latest || o.createdAt > latest ? o.createdAt : latest), undefined),
-      }
-    }),
-  )
+  return http('/admin/customers')
+}
+
+/** GET /api/admin/customers/:id/orders — a customer's orders, newest first. */
+export function listCustomerOrders(customerId: ID): Promise<Order[]> {
+  return http(`/admin/customers/${encodeURIComponent(customerId)}/orders`)
 }
 
 export interface FeedbackEntry {
@@ -34,30 +28,10 @@ export interface FeedbackEntry {
 
 /** GET /api/admin/feedback — ratings and problem reports, newest first. */
 export function listFeedback(): Promise<FeedbackEntry[]> {
-  return mock(() =>
-    db.orders
-      .filter((o) => o.rating || o.problemReports.length)
-      .map((o) => ({
-        orderId: o.id,
-        orderNumber: o.orderNumber,
-        customerName: o.customerName,
-        rating: o.rating,
-        problems: o.problemReports,
-        createdAt: o.rating?.createdAt ?? o.problemReports[0]?.createdAt ?? o.createdAt,
-      }))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-  )
+  return http('/admin/feedback')
 }
 
 /** PATCH /api/admin/orders/:orderId/problems/:problemId */
 export function setProblemResolved(orderId: ID, problemId: ID, resolved: boolean): Promise<ProblemReport> {
-  return mock(
-    () => {
-      const order = db.orders.find((o) => o.id === orderId) ?? notFound('Order')
-      const problem = order.problemReports.find((p) => p.id === problemId) ?? notFound('Problem report')
-      problem.resolved = resolved
-      return problem
-    },
-    { write: true },
-  )
+  return http(`/admin/orders/${encodeURIComponent(orderId)}/problems/${encodeURIComponent(problemId)}`, { method: 'PATCH', body: { resolved } })
 }

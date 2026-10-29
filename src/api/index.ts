@@ -1,5 +1,5 @@
 // The only entry point the UI uses for data. Each module documents the REST endpoint
-// its functions stand in for, so a real backend can replace the mock bodies one by one.
+// its functions call on the backend (backend/README.md lists them).
 export * as authApi from './auth'
 export * as customersApi from './customers'
 export * as menuApi from './menu'
@@ -11,4 +11,3 @@ export * as reportsApi from './reports'
 export * as settingsApi from './settings'
 export * as staffApi from './staff'
 export { ApiError, isOffline } from './client'
-export { resetDb as resetDemoData } from './mock/db'

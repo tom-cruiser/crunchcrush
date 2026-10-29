@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
-import { Plus, RotateCcw, Trash2 } from 'lucide-react'
-import { resetDemoData, settingsApi } from '@/api'
-import { Button, Card, ErrorState, Input, Modal, SkeletonList, Switch } from '@/components/ui'
+import { Plus, Trash2 } from 'lucide-react'
+import { settingsApi } from '@/api'
+import { Button, Card, ErrorState, Input, SkeletonList, Switch } from '@/components/ui'
 import { FULFILLMENT_TYPES, PAYMENT_METHODS, settingsSchema, toPatch, toValues, type SettingsValues } from '@/features/admin/settings/settingsSchema'
 import { uid } from '@/lib/id'
 import { invalidateCache, useAsync } from '@/lib/useAsync'
@@ -20,7 +20,6 @@ export default function SettingsPage() {
 
 function SettingsForm({ settings, onSaved }: { settings: RestaurantSettings; onSaved: (s: RestaurantSettings) => void }) {
   const { t } = useTranslation()
-  const [confirmReset, setConfirmReset] = useState(false)
   const {
     register,
     control,
@@ -157,11 +156,6 @@ function SettingsForm({ settings, onSaved }: { settings: RestaurantSettings; onS
         />
       </Section>
 
-      <Section title="Demo data" description="Everything in this demo is stored in this browser.">
-        <Button variant="outline" leftIcon={<RotateCcw className="h-4 w-4" />} onClick={() => setConfirmReset(true)} className="self-start">
-          Reset demo data
-        </Button>
-      </Section>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 p-3 backdrop-blur lg:left-60">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
@@ -175,32 +169,6 @@ function SettingsForm({ settings, onSaved }: { settings: RestaurantSettings; onS
         </div>
       </div>
 
-      <Modal
-        open={confirmReset}
-        onClose={() => setConfirmReset(false)}
-        title="Reset demo data?"
-        size="sm"
-        footer={
-          <div className="flex gap-3">
-            <Button variant="outline" fullWidth onClick={() => setConfirmReset(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              fullWidth
-              onClick={() => {
-                resetDemoData()
-                invalidateCache()
-                window.location.reload()
-              }}
-            >
-              Reset
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-ink-soft">Menu, orders, settings and staff go back to the original sample data. Your staff sign-in stays.</p>
-      </Modal>
     </form>
   )
 }

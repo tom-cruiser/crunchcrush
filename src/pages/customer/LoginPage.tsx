@@ -8,8 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, authApi } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
 import { isRwMobile, normalizeRwPhone } from '@/features/checkout/schema'
-import { DEMO_CUSTOMER_EMAIL, DEMO_PASSWORD, DEMO_STAFF_ACCOUNTS } from '@/features/auth/demoAccounts'
-import { homeForRole, ROLE_LABELS } from '@/features/auth/permissions'
+import { homeForRole } from '@/features/auth/permissions'
 import { cn } from '@/lib/cn'
 import { formatPhone } from '@/lib/format'
 import { useAuth } from '@/store/auth'
@@ -81,7 +80,6 @@ function PhoneLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
       <p className="text-sm text-ink-soft">{t('auth.codeSent', { phone: formatPhone(phone) })}</p>
       <Input
         label={t('auth.code')}
-        hint={t('auth.demoCode')}
         inputMode="numeric"
         autoComplete="one-time-code"
         maxLength={6}
@@ -114,11 +112,6 @@ function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
   const navigate = useNavigate()
   const setStaff = useAuth((s) => s.setStaff)
   const form = useForm<z.infer<typeof emailSchema>>({ resolver: zodResolver(emailSchema), defaultValues: { email: '', password: '' } })
-  const fill = (email: string) => {
-    form.setValue('email', email)
-    form.setValue('password', DEMO_PASSWORD)
-    form.clearErrors()
-  }
   const submit = async ({ email, password }: z.infer<typeof emailSchema>) => {
     try {
       const session = await authApi.loginWithEmail(email, password)
@@ -142,20 +135,10 @@ function EmailLogin({ onSignedIn }: { onSignedIn: (user: User, token: string) =>
   return (
     <form onSubmit={form.handleSubmit(submit)} className="flex flex-col gap-4" noValidate>
       <Input label={t('auth.email')} type="email" autoComplete="email" {...form.register('email')} error={form.formState.errors.email?.message} />
-      <Input label={t('auth.password')} type="password" autoComplete="current-password" {...form.register('password')} error={form.formState.errors.password?.message} hint={t('auth.demoEmail')} />
+      <Input label={t('auth.password')} type="password" autoComplete="current-password" {...form.register('password')} error={form.formState.errors.password?.message} hint={t('auth.emailHint')} />
       <Button type="submit" fullWidth size="lg" loading={form.formState.isSubmitting}>
         {t('auth.signIn')}
       </Button>
-      <div className="rounded-xl bg-muted p-3 text-xs text-ink-soft">
-        <p className="mb-2 font-semibold text-ink">{t('auth.demoAccounts', { password: DEMO_PASSWORD })}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {[{ label: t('auth.demoCustomer'), email: DEMO_CUSTOMER_EMAIL }, ...DEMO_STAFF_ACCOUNTS.map((a) => ({ label: ROLE_LABELS[a.role], email: a.email }))].map((a) => (
-            <button key={a.email} type="button" onClick={() => fill(a.email)} className="rounded-full bg-surface px-2.5 py-1 font-semibold text-ink ring-1 ring-line hover:ring-ink">
-              {a.label}
-            </button>
-          ))}
-        </div>
-      </div>
     </form>
   )
 }

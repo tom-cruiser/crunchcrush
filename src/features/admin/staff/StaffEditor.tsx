@@ -82,7 +82,7 @@ export function StaffEditor({ staff, isSelf, onClose, onSaved }: Props) {
             <Switch label="Can sign in" description={isSelf ? 'You can’t deactivate yourself' : 'Switch off when someone leaves; their history is kept'} disabled={isSelf} checked={field.value} onChange={field.onChange} />
           )}
         />
-        {!staff && <p className="text-xs text-ink-soft">Demo: new staff sign in with the demo password demo1234.</p>}
+        {!staff && <p className="text-xs text-ink-soft">We’ll email them a link to set their password.</p>}
       </form>
     </Modal>
   )
