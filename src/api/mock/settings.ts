@@ -20,7 +20,7 @@ export const mockSettings: RestaurantSettings = {
   locale: 'en-RW',
   timezone: 'Africa/Kigali',
   logoUrl: '/favicon.svg',
-  coverUrl: '/images/cover.svg',
+  coverUrl: '/images/cover.webp',
   isOpen: true,
   busyMode: false,
   busyExtraMinutes: 15,

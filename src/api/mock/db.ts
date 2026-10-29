@@ -51,7 +51,11 @@ function load(): MockDb {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as MockDb
-      if (parsed.version === VERSION) return parsed
+      if (parsed.version === VERSION) {
+        // The default cover changed from a drawing to a photo; keep any cover the owner set themselves.
+        if (parsed.settings.coverUrl === '/images/cover.svg') parsed.settings.coverUrl = '/images/cover.webp'
+        return parsed
+      }
     }
   } catch {
     // Storage unavailable or corrupt: fall back to fresh seed data.
