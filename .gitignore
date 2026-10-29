@@ -3,3 +3,6 @@ dist
 dev-dist
 *.local
 .DS_Store
+
+# The API lives in its own repository (tom-cruiser/crunchcrust-backend), checked out here.
+backend/
