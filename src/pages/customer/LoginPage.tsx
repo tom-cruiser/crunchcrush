@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
-import { Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Mail, Phone } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, authApi } from '@/api'
 import { Button, Card, CardBody, Input } from '@/components/ui'
@@ -188,6 +188,10 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-4 py-4">
+      <Link to="/" className="-ml-2 flex w-fit items-center gap-1.5 rounded-full px-2 py-1 text-sm font-semibold text-ink-soft hover:bg-muted hover:text-ink">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        {t('common.back')}
+      </Link>
       <div className="text-center">
         <h1 className="text-2xl font-extrabold">{t('auth.signInTitle')}</h1>
         <p className="mt-1 text-sm text-ink-soft">{t('auth.signInBody')}</p>
