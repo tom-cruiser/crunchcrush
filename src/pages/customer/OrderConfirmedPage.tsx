@@ -14,7 +14,8 @@ export default function OrderConfirmedPage() {
   const { t } = useTranslation()
   const { orderId = '' } = useParams()
   const order = useAsync(() => ordersApi.getOrder(orderId), [orderId])
-  const { data: settings } = useSettings()
+  const settingsQuery = useSettings()
+  const settings = settingsQuery.data
 
   if (order.error) {
     if (order.error instanceof ApiError && order.error.code === 'not_found') {
@@ -22,6 +23,7 @@ export default function OrderConfirmedPage() {
     }
     return <ErrorState error={order.error} onRetry={order.reload} />
   }
+  if (settingsQuery.error && !settings) return <ErrorState error={settingsQuery.error} onRetry={settingsQuery.reload} />
   if (!order.data || !settings) return <SkeletonList rows={3} />
 
   const o = order.data

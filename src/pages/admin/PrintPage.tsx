@@ -108,7 +108,8 @@ export default function PrintPage() {
   const [params] = useSearchParams()
   const type = params.get('type') === 'receipt' ? 'receipt' : 'kitchen'
   const order = useAsync(() => ordersApi.getOrder(orderId), [orderId])
-  const { data: settings } = useSettings()
+  const settingsQuery = useSettings()
+  const settings = settingsQuery.data
   const ready = Boolean(order.data && settings)
 
   useEffect(() => {
@@ -118,6 +119,7 @@ export default function PrintPage() {
   }, [ready, params])
 
   if (order.error) return <ErrorState error={order.error} onRetry={order.reload} />
+  if (settingsQuery.error && !settings) return <ErrorState error={settingsQuery.error} onRetry={settingsQuery.reload} />
   if (!order.data || !settings) return <Spinner label="Loading" className="m-8" />
 
   return (

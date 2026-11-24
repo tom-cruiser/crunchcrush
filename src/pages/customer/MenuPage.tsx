@@ -37,7 +37,8 @@ function MenuSkeleton() {
 export default function MenuPage() {
   const { t } = useTranslation()
   const menu = useMenu()
-  const { data: settings } = useSettings()
+  const settingsQuery = useSettings()
+  const settings = settingsQuery.data
   const [params, setParams] = useSearchParams()
   const [filters, setFilters] = useState<MenuFilters>(EMPTY_FILTERS)
   const deferredFilters = useDeferredValue(filters)
@@ -106,7 +107,15 @@ export default function MenuPage() {
     if (top !== undefined && top < 64) window.scrollTo({ top: window.scrollY + top - 64 })
   }
 
-  if (menu.error && !menu.data) return <ErrorState error={menu.error} onRetry={menu.reload} />
+  // Either request failing shows the error; Retry refetches whichever is missing.
+  const loadError = (!menu.data && menu.error) || (!settings && settingsQuery.error)
+  if (loadError) {
+    const retry = () => {
+      if (!menu.data) void menu.reload()
+      if (!settings) void settingsQuery.reload()
+    }
+    return <ErrorState error={loadError} onRetry={retry} />
+  }
   if (!menu.data || !settings) return <MenuSkeleton />
 
   const status = getOpenStatus(settings)

@@ -35,7 +35,8 @@ export default function OrderTrackingPage() {
   const { t } = useTranslation()
   const { orderId = '' } = useParams()
   const order = useAsync(() => ordersApi.getOrder(orderId), [orderId])
-  const { data: settings } = useSettings()
+  const settingsQuery = useSettings()
+  const settings = settingsQuery.data
   const { reorder, ready: reorderReady } = useReorder()
   const [cancelOpen, setCancelOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
@@ -65,6 +66,7 @@ export default function OrderTrackingPage() {
     }
     return <ErrorState error={order.error} onRetry={order.reload} />
   }
+  if (settingsQuery.error && !settings) return <ErrorState error={settingsQuery.error} onRetry={settingsQuery.reload} />
   if (!order.data || !settings) return <TrackingSkeleton />
 
   const o = order.data
